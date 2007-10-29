@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual C# Express 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vs2005-msmq", "vs2005-msmq.csproj", "{A5FCA129-991B-4CB2-987A-B25E43B0F5EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vs2005-msmq-test", "vs2005-msmq-test.csproj", "{2F31ED5C-44A2-464A-BD55-2B5B010654E8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A5FCA129-991B-4CB2-987A-B25E43B0F5EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5FCA129-991B-4CB2-987A-B25E43B0F5EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5FCA129-991B-4CB2-987A-B25E43B0F5EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5FCA129-991B-4CB2-987A-B25E43B0F5EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F31ED5C-44A2-464A-BD55-2B5B010654E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F31ED5C-44A2-464A-BD55-2B5B010654E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F31ED5C-44A2-464A-BD55-2B5B010654E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F31ED5C-44A2-464A-BD55-2B5B010654E8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
