@@ -6,8 +6,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{A5FCA129-991B-4CB2-987A-B25E43B0F5EC}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Apache.MSMQ</RootNamespace>
-    <AssemblyName>NMS.MSMQ</AssemblyName>
+    <RootNamespace>Apache.NMS.MSMQ</RootNamespace>
+    <AssemblyName>Apache.NMS.MSMQ</AssemblyName>
     <WarningLevel>4</WarningLevel>
     <StartupObject>
     </StartupObject>
@@ -30,13 +30,13 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NMS, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Apache.NMS, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\NMS.dll</HintPath>
+      <HintPath>lib\Apache.NMS.dll</HintPath>
     </Reference>
-    <Reference Include="NMS.ActiveMQ, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Apache.NMS.ActiveMQ, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>lib\NMS.ActiveMQ.dll</HintPath>
+      <HintPath>lib\Apache.NMS.ActiveMQ.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
