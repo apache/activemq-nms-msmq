@@ -17,7 +17,7 @@
 using Apache.NMS;
 using System;
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
 	public delegate void AcknowledgeHandler(BaseMessage baseMessage);
 

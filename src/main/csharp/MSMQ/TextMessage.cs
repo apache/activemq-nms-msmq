@@ -18,7 +18,7 @@ using Apache.NMS;
 using System;
 
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
 	public class TextMessage : BaseMessage, ITextMessage
     {

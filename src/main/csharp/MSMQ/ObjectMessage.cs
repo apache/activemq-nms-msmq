@@ -25,7 +25,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 #endif
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
     public class ObjectMessage : BaseMessage, IObjectMessage
     {

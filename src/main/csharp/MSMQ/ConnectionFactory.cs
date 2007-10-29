@@ -17,7 +17,7 @@
 using System;
 using Apache.NMS;
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
     /// <summary>
     /// A Factory that can estbalish NMS connections to MSMQ

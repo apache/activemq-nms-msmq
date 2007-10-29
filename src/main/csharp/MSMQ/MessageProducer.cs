@@ -18,7 +18,7 @@ using System;
 using System.Messaging;
 using Apache.NMS;
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
     /// <summary>
     /// An object capable of sending messages to some destination

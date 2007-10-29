@@ -18,7 +18,7 @@ using System;
 using Apache.NMS;
 
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
 	public class BytesMessage : BaseMessage, IBytesMessage
     {
