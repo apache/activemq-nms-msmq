@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
 	public class StreamMessage : BaseMessage
     {

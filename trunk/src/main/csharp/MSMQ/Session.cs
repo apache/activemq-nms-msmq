@@ -18,7 +18,7 @@ using Apache.NMS;
 using System;
 using System.Messaging;
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
     /// <summary>
     /// MSQM provider of ISession

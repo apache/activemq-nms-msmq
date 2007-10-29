@@ -17,7 +17,7 @@
 using System.Messaging;
 using Apache.NMS;
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
     public interface IMessageConverter
     {

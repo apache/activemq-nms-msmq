@@ -17,7 +17,7 @@
 using Apache.NMS;
 using System;
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
     /// <summary>
     /// Represents a NMS connection MSMQ.  Since the underlying MSMQ APIs are actually

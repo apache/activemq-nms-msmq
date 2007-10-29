@@ -17,7 +17,7 @@
 using Apache.NMS;
 using NUnit.Framework;
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
 	[TestFixture]
     public class ProducerTest : NMS.Test.NMSTestSupport

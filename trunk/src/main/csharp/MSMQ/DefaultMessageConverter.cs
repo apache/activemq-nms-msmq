@@ -19,7 +19,7 @@ using System.Text;
 using System.Messaging;
 using Apache.NMS;
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
     public class DefaultMessageConverter : IMessageConverter
 	{

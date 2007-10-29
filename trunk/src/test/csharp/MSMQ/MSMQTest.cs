@@ -18,7 +18,7 @@ using NUnit.Framework;
 using System;
 using System.Messaging;
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {    
     /// <summary>
     /// Use to test and verify MSMQ behaviour.

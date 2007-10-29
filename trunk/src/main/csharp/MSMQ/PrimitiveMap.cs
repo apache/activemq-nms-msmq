@@ -19,7 +19,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Apache.MSMQ
+namespace Apache.NMS.MSMQ
 {
     /// <summary>
     /// A default implementation of IPrimitiveMap
