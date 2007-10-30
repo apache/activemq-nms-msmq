@@ -14,14 +14,15 @@ using System.Runtime.InteropServices;
 
 [assembly: ComVisibleAttribute(false)]
 [assembly: CLSCompliantAttribute(true)]
-[assembly: AssemblyTitleAttribute("Apache NMS for MSMQ Tests")]
-[assembly: AssemblyDescriptionAttribute("Unit Tests for the NMS (.Net Messaging Library) to MSMQ")]
+[assembly: AssemblyTitleAttribute("Apache NMS for MSMQ Class Library")]
+[assembly: AssemblyDescriptionAttribute("Apache NMS for MSMQ Class Library (.Net Messaging Library Implementation): An imp" +
+    "lementation of the NMS API for MSMQ")]
 [assembly: AssemblyConfigurationAttribute("SNAPSHOT")]
-[assembly: AssemblyCompanyAttribute("http://activemq.apache.org/")]
-[assembly: AssemblyProductAttribute("Apache ActiveMQ")]
+[assembly: AssemblyCompanyAttribute("http://activemq.apache.org/nms")]
+[assembly: AssemblyProductAttribute("Apache NMS for MSMQ Class Library")]
 [assembly: AssemblyCopyrightAttribute("Copyright (C) 2005-2007 Apache Software Foundation")]
 [assembly: AssemblyTrademarkAttribute("")]
 [assembly: AssemblyCultureAttribute("")]
-[assembly: AssemblyVersionAttribute("4.0")]
-[assembly: AssemblyInformationalVersionAttribute("4.0")]
+[assembly: AssemblyVersionAttribute("1.0")]
+[assembly: AssemblyInformationalVersionAttribute("1.0")]
 

@@ -44,23 +44,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\main\csharp\MSMQ\BaseMessage.cs" />
-    <Compile Include="src\main\csharp\MSMQ\BytesMessage.cs" />
-    <Compile Include="src\main\csharp\MSMQ\CommonAssemblyInfo.cs" />
-    <Compile Include="src\main\csharp\MSMQ\Connection.cs" />
-    <Compile Include="src\main\csharp\MSMQ\ConnectionFactory.cs" />
-    <Compile Include="src\main\csharp\MSMQ\DefaultMessageConverter.cs" />
-    <Compile Include="src\main\csharp\MSMQ\Destination.cs" />
-    <Compile Include="src\main\csharp\MSMQ\IMessageConverter.cs" />
-    <Compile Include="src\main\csharp\MSMQ\MapMessage.cs" />
-    <Compile Include="src\main\csharp\MSMQ\MessageConsumer.cs" />
-    <Compile Include="src\main\csharp\MSMQ\MessageProducer.cs" />
-    <Compile Include="src\main\csharp\MSMQ\ObjectMessage.cs" />
-    <Compile Include="src\main\csharp\MSMQ\PrimitiveMap.cs" />
-    <Compile Include="src\main\csharp\MSMQ\Queue.cs" />
-    <Compile Include="src\main\csharp\MSMQ\Session.cs" />
-    <Compile Include="src\main\csharp\MSMQ\StreamMessage.cs" />
-    <Compile Include="src\main\csharp\MSMQ\TextMessage.cs" />
+    <Compile Include="src\main\csharp\BaseMessage.cs" />
+    <Compile Include="src\main\csharp\BytesMessage.cs" />
+    <Compile Include="src\main\csharp\CommonAssemblyInfo.cs" />
+    <Compile Include="src\main\csharp\Connection.cs" />
+    <Compile Include="src\main\csharp\ConnectionFactory.cs" />
+    <Compile Include="src\main\csharp\DefaultMessageConverter.cs" />
+    <Compile Include="src\main\csharp\Destination.cs" />
+    <Compile Include="src\main\csharp\IMessageConverter.cs" />
+    <Compile Include="src\main\csharp\MapMessage.cs" />
+    <Compile Include="src\main\csharp\MessageConsumer.cs" />
+    <Compile Include="src\main\csharp\MessageProducer.cs" />
+    <Compile Include="src\main\csharp\ObjectMessage.cs" />
+    <Compile Include="src\main\csharp\PrimitiveMap.cs" />
+    <Compile Include="src\main\csharp\Queue.cs" />
+    <Compile Include="src\main\csharp\Session.cs" />
+    <Compile Include="src\main\csharp\StreamMessage.cs" />
+    <Compile Include="src\main\csharp\TextMessage.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="activemq-dotnet.snk" />

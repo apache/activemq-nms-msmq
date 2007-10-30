@@ -56,11 +56,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\test\csharp\MSMQ\CommonAssemblyInfo.cs" />
-    <Compile Include="src\test\csharp\MSMQ\ProducerTest.cs">
+    <Compile Include="src\test\csharp\CommonAssemblyInfo.cs" />
+    <Compile Include="src\test\csharp\ProducerTest.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="src\test\csharp\MSMQ\MSMQTest.cs">
+    <Compile Include="src\test\csharp\MSMQTest.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
