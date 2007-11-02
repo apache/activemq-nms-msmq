@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Apache.NMS.ActiveMQ;
-using Apache.NMS.ActiveMQ.Util;
 using Apache.NMS;
+using Apache.NMS.MSMQ.Util;
 using System;
 using System.Messaging;
 using System.Threading;

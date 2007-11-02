@@ -53,15 +53,13 @@
     <Compile Include="src\main\csharp\Session.cs" />
     <Compile Include="src\main\csharp\StreamMessage.cs" />
     <Compile Include="src\main\csharp\TextMessage.cs" />
+    <Compile Include="src\main\csharp\Util\AtomicBoolean.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="activemq-dotnet.snk" />
+    <None Include="src\main\csharp\MessageConsumer.cs.orig" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Apache.NMS.ActiveMQ\vs2005-activemq.csproj">
-      <Project>{08321F42-4B3D-4815-B592-95962BAC3B9F}</Project>
-      <Name>vs2005-activemq</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Apache.NMS\vs2005-nms.csproj">
       <Project>{300C1716-0674-4D01-8F5D-151E59A504FE}</Project>
       <Name>vs2005-nms</Name>
