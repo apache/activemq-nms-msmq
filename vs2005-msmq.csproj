@@ -30,14 +30,6 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Apache.NMS, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(USERPROFILE)\.nant\repository\org.apache.activemq\Apache.NMS\1.0-SNAPSHOT\net-2.0\debug\Apache.NMS.dll</HintPath>
-    </Reference>
-    <Reference Include="Apache.NMS.ActiveMQ, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(USERPROFILE)\.nant\repository\org.apache.activemq\Apache.NMS.ActiveMQ\1.0-SNAPSHOT\net-2.0\debug\Apache.NMS.ActiveMQ.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Messaging" />
@@ -64,6 +56,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="activemq-dotnet.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Apache.NMS.ActiveMQ\vs2005-activemq.csproj">
+      <Project>{08321F42-4B3D-4815-B592-95962BAC3B9F}</Project>
+      <Name>vs2005-activemq</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Apache.NMS\vs2005-nms.csproj">
+      <Project>{300C1716-0674-4D01-8F5D-151E59A504FE}</Project>
+      <Name>vs2005-nms</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
 </Project>
