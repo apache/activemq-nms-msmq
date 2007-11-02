@@ -38,11 +38,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Apache.NMS\vs2005-nms-test.csproj">
+    <ProjectReference Include="vendor\Apache.NMS\vs2005-nms-test.csproj">
       <Project>{2F3ABCF5-EE87-43B1-9DE7-0548FD6A4E52}</Project>
       <Name>vs2005-nms-test</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Apache.NMS\vs2005-nms.csproj">
+    <ProjectReference Include="vendor\Apache.NMS\vs2005-nms.csproj">
       <Project>{300C1716-0674-4D01-8F5D-151E59A504FE}</Project>
       <Name>vs2005-nms</Name>
     </ProjectReference>
