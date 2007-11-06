@@ -57,7 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="activemq-dotnet.snk" />
-    <EmbeddedResource Include="Apache.NMS.NMSFactory.msmq" />
+    <EmbeddedResource Include="Apache.NMS.NMSConnectionFactory.msmq" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="vendor\Apache.NMS\vs2005-nms.csproj">
