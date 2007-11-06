@@ -28,7 +28,11 @@ namespace Apache.NMS.MSMQ
 		{
 		}
 
-		public ConnectionFactory(Uri brokerUri, string clientID)
+        public ConnectionFactory(String brokerUri)
+        {
+        }
+
+        public ConnectionFactory(String brokerUri, string clientID)
 		{
 		}
 
