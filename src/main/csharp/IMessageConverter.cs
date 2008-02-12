@@ -23,11 +23,11 @@ namespace Apache.NMS.MSMQ
     {
 		
 		/// <summary>
-	/// Method ToMSMQMessageQueue
-/// </summary>
- /// <param name="destination">An IDestination</param>
- /// <returns>A  MessageQueue</retutns>
-MessageQueue ToMsmqDestination(IDestination destination);
+		/// Method ToMSMQMessageQueue
+		/// </summary>
+		/// <param name="destination">An IDestination</param>
+		/// <returns>A  MessageQueue</returns>
+		MessageQueue ToMsmqDestination(IDestination destination);
 
         Message ToMsmqMessage(IMessage message);
         IMessage ToNmsMessage(Message message);
