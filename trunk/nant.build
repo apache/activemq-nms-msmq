@@ -41,7 +41,13 @@
   <property name="Apache.NMS.Test.dll" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.Test.dll" dynamic="true"/>
   <property name="Apache.NMS.Test.pdb" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.Test.pdb" dynamic="true"/>
   <property name="Apache.NMS.Test.xml" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.Test.xml" dynamic="true"/>
-           
+
+  <!-- Skip certain frameworks, since MSMQ is not supported on those platforms. -->
+  <property name="build.netcf-1.0.skip" value="true"/>
+  <property name="build.netcf-2.0.skip" value="true"/>
+  <property name="build.mono-1.0.skip" value="true"/>
+  <property name="build.mono-2.0.skip" value="true"/>
+  
   <target name="vendor-init" description="Initializes the vendor libraries.">
     <!-- The following does a poor man's maven style dependency install to the local repo -->
     <property name="repo.task.artifact" value="${nunit.dll}"/>
