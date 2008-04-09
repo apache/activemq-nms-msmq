@@ -17,6 +17,7 @@
 using System;
 using System.Text;
 using System.Messaging;
+using System.IO;
 using Apache.NMS;
 
 namespace Apache.NMS.MSMQ
@@ -26,16 +27,17 @@ namespace Apache.NMS.MSMQ
         public virtual Message ToMsmqMessage(IMessage message)
         {
             Message answer = new Message();
+            ConvertMessageBodyToMSMQ(message, answer);
             MessageQueue responseQueue=null;
             if (message.NMSReplyTo != null)
             {
                 IDestination destination = message.NMSReplyTo;
 				responseQueue = ToMsmqDestination(destination);
             }
-            //if (message.NMSExpiration != null)
-            //{
+            if (message.NMSTimeToLive != TimeSpan.Zero)
+            {
                 answer.TimeToBeReceived = message.NMSTimeToLive;
-            //}
+            }
             if (message.NMSCorrelationID != null)
             {
                 answer.CorrelationId = message.NMSCorrelationID;
@@ -50,18 +52,49 @@ namespace Apache.NMS.MSMQ
             return answer;
         }
 		
+        protected virtual void ConvertMessageBodyToMSMQ(IMessage message,
+                                                        Message answer)
+        {
+            if (message is IBytesMessage)
+            {
+                byte[] bytes = (message as IBytesMessage).Content;
+                answer.BodyStream.Write(bytes, 0, bytes.Length);
+            }
+            else
+            {
+                throw new Exception("unhandled message type");
+            }
+        }
+
         public virtual IMessage ToNmsMessage(Message message)
         {
 			BaseMessage answer = CreateNmsMessage(message);
 			answer.NMSMessageId = message.Id;
-			if (message.CorrelationId != null)
+			try
 			{
 				answer.NMSCorrelationID = message.CorrelationId;
 			}
-			answer.NMSDestination = ToNmsDestination(message.DestinationQueue);
+			catch (InvalidOperationException)
+			{
+			}
+
+			try
+			{
+				answer.NMSDestination = ToNmsDestination(message.DestinationQueue);
+			}
+			catch (InvalidOperationException)
+			{
+			}
+
 			answer.NMSType = message.Label;
 			answer.NMSReplyTo = ToNmsDestination(message.ResponseQueue);
-			answer.NMSTimeToLive = message.TimeToBeReceived;
+			try
+			{
+				answer.NMSTimeToLive = message.TimeToBeReceived;
+			}
+			catch (InvalidOperationException)
+			{
+			}
             return answer;
         }
 		
@@ -82,19 +115,17 @@ namespace Apache.NMS.MSMQ
 	
 		protected virtual BaseMessage CreateNmsMessage(Message message)
 		{
-			object body = message.Body;
-			if (body == null)
+			Stream stream = message.BodyStream;
+			if (stream == null || stream.Length == 0)
 			{
 				return new BaseMessage();
 			}
-			else if (body is string)
-			{
-				return new TextMessage(body as string);
-			}
-			else
-			{
-				return new ObjectMessage(body);
-			}
+			byte[] buf = new byte[stream.Length];
+			stream.Read(buf, 0, buf.Length);
+			// TODO: how to recognise other flavors of message?
+			BytesMessage result =  new BytesMessage();
+			result.Content = buf;
+			return result;
 		}
 	}
 }
