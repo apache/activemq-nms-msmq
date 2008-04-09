@@ -43,7 +43,10 @@ namespace Apache.NMS.MSMQ
             answer.Recoverable = message.NMSPersistent;
             answer.Priority = MessagePriority.Normal;
             answer.ResponseQueue = responseQueue;
-			answer.Label = message.NMSType;
+			if(message.NMSType != null)
+			{
+				answer.Label = message.NMSType;
+			}
             return answer;
         }
 		
