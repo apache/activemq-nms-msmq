@@ -41,8 +41,20 @@ namespace Apache.NMS.MSMQ
         {
             CheckConnected();
         }
-                
-        /// <summary>
+
+		/// <summary>
+		/// This property determines if the asynchronous message delivery of incoming
+		/// messages has been started for this connection.
+		/// </summary>
+		public bool IsStarted
+		{
+			get
+			{
+				return true;
+			}
+		}
+
+		/// <summary>
         /// Stop message delivery for this connection.
         /// </summary>
         public void Stop()
