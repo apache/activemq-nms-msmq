@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 using Apache.NMS;
-using Apache.NMS.MSMQ.Util;
+using Apache.NMS.Util;
 using System;
 using System.Messaging;
 using System.Threading;
@@ -78,11 +78,11 @@ namespace Apache.NMS.MSMQ
 
         public void Close()
         {
-			StopmAsyncDelivery();
+			StopAsyncDelivery();
             Dispose();
         }
 		
-		public void StopmAsyncDelivery()
+		public void StopAsyncDelivery()
 		{
 			asyncDelivery.Value = true;
 		}
