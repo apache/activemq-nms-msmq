@@ -84,7 +84,7 @@ namespace Apache.NMS.MSMQ
 		
 		public void StopAsyncDelivery()
 		{
-			asyncDelivery.Value = true;
+			asyncDelivery.Value = false;
 		}
 
 		protected virtual void StartAsyncDelivery()
