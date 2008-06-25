@@ -91,6 +91,7 @@ namespace Apache.NMS.MSMQ
 		{
 			if (asyncDelivery.CompareAndSet(false, true)) {
 				Thread thread = new Thread(DispatchLoop);
+				thread.IsBackground = true;
 				thread.Start();
 			}
 		}
