@@ -78,7 +78,13 @@ namespace Apache.NMS.MSMQ
             CheckConnected();
             return new Session(this, mode);
         }
-        
+
+		public ISession CreateSession(AcknowledgementMode mode, TimeSpan responseTimoeout)
+		{
+			// Ignore: responseTimeout
+			return CreateSession(mode);
+		}
+
         public void Dispose()
         {
             closed = true;

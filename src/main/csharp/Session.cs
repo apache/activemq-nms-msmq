@@ -53,25 +53,43 @@ namespace Apache.NMS.MSMQ
         {
             return CreateProducer(null);
         }
-        
-        public IMessageProducer CreateProducer(IDestination destination)
+
+		public IMessageProducer CreateProducer(IDestination destination)
+		{
+			return new MessageProducer(this, (Destination) destination);
+		}
+
+        public IMessageProducer CreateProducer(IDestination destination, TimeSpan responseTimeout)
         {
-            return new MessageProducer(this, (Destination) destination);
+			// Ignore: responseTimeout
+			return CreateProducer(destination);
         }
         
         public IMessageConsumer CreateConsumer(IDestination destination)
         {
             return CreateConsumer(destination, null);
         }
+
+		public IMessageConsumer CreateConsumer(IDestination destination, TimeSpan responseTimeout)
+		{
+			// Ignore: responseTimeout
+			return CreateConsumer(destination);
+		}
         
         public IMessageConsumer CreateConsumer(IDestination destination, string selector)
         {
             return CreateConsumer(destination, selector, false);
         }
 
-        public IMessageConsumer CreateConsumer(IDestination destination, string selector, bool noLocal)
-        {
-			if (selector != null)
+		public IMessageConsumer CreateConsumer(IDestination destination, string selector, TimeSpan responseTimeout)
+		{
+			// Ignore: responseTimeout
+			return CreateConsumer(destination, selector);
+		}
+
+		public IMessageConsumer CreateConsumer(IDestination destination, string selector, bool noLocal)
+		{
+			if(selector != null)
 			{
 				throw new NotImplementedException("Selectors are not supported by MSQM");
 			}
@@ -79,11 +97,22 @@ namespace Apache.NMS.MSMQ
             return new MessageConsumer(this, acknowledgementMode, queue);
         }
 
+		public IMessageConsumer CreateConsumer(IDestination destination, string selector, bool noLocal, TimeSpan responseTimeout)
+		{
+			// Ignore: responseTimeout
+			return CreateConsumer(destination, selector, noLocal);
+		}
+
         public IMessageConsumer CreateDurableConsumer(ITopic destination, string name, string selector, bool noLocal)
         {
             throw new NotImplementedException("Durable Topic subscribers are not supported by MSMQ");
         }
-        
+
+		public IMessageConsumer CreateDurableConsumer(ITopic destination, string name, string selector, bool noLocal, TimeSpan responseTimeout)
+		{
+			return CreateDurableConsumer(destination, name, selector, noLocal);
+		}
+
         public IQueue GetQueue(string name)
         {
             return new Queue(name);
