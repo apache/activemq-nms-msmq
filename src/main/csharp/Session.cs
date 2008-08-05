@@ -113,7 +113,11 @@ namespace Apache.NMS.MSMQ
 			return CreateDurableConsumer(destination, name, selector, noLocal);
 		}
 
-        public IQueue GetQueue(string name)
+		public void DeleteDurableConsumer(string name)
+		{
+		}
+
+		public IQueue GetQueue(string name)
         {
             return new Queue(name);
         }
