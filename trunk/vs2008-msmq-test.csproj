@@ -51,17 +51,14 @@
     <DebugType>full</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.2.0.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(USERPROFILE)\.nant\repository\org.nunit\nunit\2.2.8\all\nunit.framework.dll</HintPath>
-    </Reference>
+    <Reference Include="nunit.framework, Version=2.4.7.0, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Messaging" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="src\test\csharp\CommonAssemblyInfo.cs" />
-    <Compile Include="src\test\csharp\NMSConnectionFactoryTest.cs" />
+    <Compile Include="src\test\csharp\InheritedTests.cs" />
     <Compile Include="src\test\csharp\ProducerTest.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -102,6 +99,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="activemq-dotnet.snk" />
+    <Content Include="nmsprovider-test.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
 </Project>

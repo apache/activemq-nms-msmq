@@ -91,7 +91,7 @@ namespace Apache.NMS.MSMQ
 		{
 			if(selector != null)
 			{
-				throw new NotImplementedException("Selectors are not supported by MSQM");
+				throw new NotImplementedException("Selectors are not supported by MSMQ");
 			}
 			MessageQueue queue = MessageConverter.ToMsmqDestination(destination);
             return new MessageConsumer(this, acknowledgementMode, queue);
@@ -120,17 +120,17 @@ namespace Apache.NMS.MSMQ
         
         public ITopic GetTopic(string name)
         {
-            throw new NotImplementedException("Topics are not supported by MSQM");
+            throw new NotImplementedException("Topics are not supported by MSMQ");
         }
         
         public ITemporaryQueue CreateTemporaryQueue()
         {
-            throw new NotImplementedException("Tempoary Queues are not supported by MSQM");
+            throw new NotImplementedException("Tempoary Queues are not supported by MSMQ");
         }
         
         public ITemporaryTopic CreateTemporaryTopic()
         {
-            throw new NotImplementedException("Tempoary Topics are not supported by MSQM");
+            throw new NotImplementedException("Tempoary Topics are not supported by MSMQ");
         }
         
         public IMessage CreateMessage()

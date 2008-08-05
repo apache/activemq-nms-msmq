@@ -22,24 +22,6 @@ namespace Apache.NMS.MSMQ
 	[TestFixture]
     public class ProducerTest : NMS.Test.NMSTestSupport
     {
-				
-		[SetUp]
-        override public void SetUp()
-        {
-			base.SetUp();
-        }
-		
-        [TearDown]
-        override public void TearDown()
-        {
-			base.TearDown();
-        }
-
-        override protected IConnectionFactory CreateConnectionFactory()
-        {
-            return new ConnectionFactory();
-        }
-	    
         protected override string CreateDestinationName()
         {
             return ".\\Private$\\" + GetType().Name;
@@ -55,12 +37,6 @@ namespace Apache.NMS.MSMQ
             ITextMessage message = Session.CreateTextMessage("1st");
 //            message.Properties["color"] =  "red";
             producer.Send(message);
-            
-            
         }
-				
     }
 }
-
-
-
