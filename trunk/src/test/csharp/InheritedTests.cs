@@ -64,7 +64,7 @@ namespace Apache.NMS.MSMQ.Test
 	}
 
 	[TestFixture]
-	public class TextMessage : Apache.NMS.Test.TextMessage
+	public class TextMessageTest : Apache.NMS.Test.TextMessageTest
 	{
 	}
 

@@ -34,7 +34,7 @@
            value="Apache NMS for MSMQ Class Library (.Net Messaging Library Implementation): An implementation of the NMS API for MSMQ"/>
   
   <!-- Repository organized as: organization/module/version/plaform/artifact, platform might be something like 'all' or 'net-2.0/release' -->
-  <property name="nunit.dll" value="org.nunit/nunit/2.2.8/all/nunit.framework.dll"/>    
+  <property name="nunit.dll" value="${basedir}/vendor/Apache.NMS/lib/nunit.framework.dll"/>
   <property name="Apache.NMS.dll" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.dll" dynamic="true"/>
   <property name="Apache.NMS.pdb" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.pdb" dynamic="true"/>
   <property name="Apache.NMS.xml" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.xml" dynamic="true"/>
@@ -43,16 +43,10 @@
   <property name="Apache.NMS.Test.xml" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.Test.xml" dynamic="true"/>
 
   <!-- Skip certain frameworks, since MSMQ is not supported on those platforms. -->
-  <property name="build.netcf-1.0.skip" value="true"/>
   <property name="build.netcf-2.0.skip" value="true"/>
-  <property name="build.mono-1.0.skip" value="true"/>
   <property name="build.mono-2.0.skip" value="true"/>
   
   <target name="vendor-init" description="Initializes the vendor libraries.">
-    <!-- The following does a poor man's maven style dependency install to the local repo -->
-    <property name="repo.task.artifact" value="${nunit.dll}"/>
-    <call target="repo-download"/>
-
     <nant buildfile="${basedir}/vendor/Apache.NMS/nant.build"/>
   </target>
 
@@ -73,6 +67,7 @@
   	<assemblyfileset failonempty="true" id="dependencies">
       <include name="mscorlib.dll" asis="true"/>
       <include name="System.dll" asis="true"/>
+      <include name="System.Xml.dll" asis="true"/>
       <include name="${lib.framework.dir}/System.Messaging.dll" />
       <include name="${Apache.NMS.dll}"/>
   	</assemblyfileset>
@@ -80,11 +75,12 @@
   	<assemblyfileset failonempty="true" id="test.dependencies">
       <include name="mscorlib.dll" asis="true"/>
       <include name="System.dll" asis="true"/>
+      <include name="System.Xml.dll" asis="true"/>
       <include name="${lib.framework.dir}/System.Messaging.dll" />
       <include name="${Apache.NMS.dll}"/>
       <include name="${Apache.NMS.Test.dll}"/>
       <include name="${build.bin.dir}/${project.name}.dll"/>
-      <include name="${nant.local.repo}/${nunit.dll}"/>
+      <include name="${nunit.dll}"/>
   	</assemblyfileset>  
 
     <fileset id="content.filenames">
