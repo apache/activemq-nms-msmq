@@ -63,9 +63,6 @@
   <ItemGroup>
     <Compile Include="src\test\csharp\CommonAssemblyInfo.cs" />
     <Compile Include="src\test\csharp\InheritedTests.cs" />
-    <Compile Include="src\test\csharp\ProducerTest.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="src\test\csharp\MSMQTest.cs">
       <SubType>Code</SubType>
     </Compile>

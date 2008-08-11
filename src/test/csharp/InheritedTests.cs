@@ -18,6 +18,10 @@ using NUnit.Framework;
 
 namespace Apache.NMS.MSMQ.Test
 {
+	// TODO: Override the formatting of destination names to support MSMQ
+	// name formatting.  MSMQ uses UNC names for queues.  For example:
+	//    .\Private$\FooQueue
+
 	[TestFixture]
 	public class AsyncConsumeTest : Apache.NMS.Test.AsyncConsumeTest
 	{
