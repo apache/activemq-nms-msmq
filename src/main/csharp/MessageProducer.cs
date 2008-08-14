@@ -173,16 +173,19 @@ namespace Apache.NMS.MSMQ
 				}
 			}
 		}
-		
-		
-		
-		public void Dispose()
+
+		public void Close()
 		{
-			if( messageQueue!=null )
+			if(messageQueue != null)
 			{
 				messageQueue.Dispose();
 				messageQueue = null;
 			}
+		}
+		
+		public void Dispose()
+		{
+			Close();
 		}
 		
 		public IMessage CreateMessage()
