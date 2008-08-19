@@ -59,32 +59,14 @@ namespace Apache.NMS.MSMQ
 			return new MessageProducer(this, (Destination) destination);
 		}
 
-		public IMessageProducer CreateProducer(IDestination destination, TimeSpan responseTimeout)
-		{
-			// Ignore: responseTimeout
-			return CreateProducer(destination);
-		}
-		
 		public IMessageConsumer CreateConsumer(IDestination destination)
 		{
 			return CreateConsumer(destination, null);
 		}
 
-		public IMessageConsumer CreateConsumer(IDestination destination, TimeSpan responseTimeout)
-		{
-			// Ignore: responseTimeout
-			return CreateConsumer(destination);
-		}
-		
 		public IMessageConsumer CreateConsumer(IDestination destination, string selector)
 		{
 			return CreateConsumer(destination, selector, false);
-		}
-
-		public IMessageConsumer CreateConsumer(IDestination destination, string selector, TimeSpan responseTimeout)
-		{
-			// Ignore: responseTimeout
-			return CreateConsumer(destination, selector);
 		}
 
 		public IMessageConsumer CreateConsumer(IDestination destination, string selector, bool noLocal)
@@ -97,31 +79,14 @@ namespace Apache.NMS.MSMQ
 			return new MessageConsumer(this, acknowledgementMode, queue);
 		}
 
-		public IMessageConsumer CreateConsumer(IDestination destination, string selector, bool noLocal, TimeSpan responseTimeout)
-		{
-			// Ignore: responseTimeout
-			return CreateConsumer(destination, selector, noLocal);
-		}
-
 		public IMessageConsumer CreateDurableConsumer(ITopic destination, string name, string selector, bool noLocal)
 		{
 			throw new NotImplementedException("Durable Topic subscribers are not supported by MSMQ");
 		}
 
-		public IMessageConsumer CreateDurableConsumer(ITopic destination, string name, string selector, bool noLocal, TimeSpan responseTimeout)
-		{
-			return CreateDurableConsumer(destination, name, selector, noLocal);
-		}
-
 		public void DeleteDurableConsumer(string name)
 		{
 			throw new NotImplementedException("Durable Topic subscribers are not supported by MSMQ");
-		}
-
-		public void DeleteDurableConsumer(string name, TimeSpan requestTimeout)
-		{
-			// Ignore: requestTimeout
-			DeleteDurableConsumer(name);
 		}
 
 		public IQueue GetQueue(string name)
@@ -210,7 +175,16 @@ namespace Apache.NMS.MSMQ
 		{
 			get { return connection; }
 		}
-		
+
+		/// <summary>
+		/// The default timeout for network requests.
+		/// </summary>
+		public TimeSpan RequestTimeout
+		{
+			get { return NMSConstants.defaultRequestTimeout; }
+			set { }
+		}
+
 		public bool Transacted
 		{
 			get { return acknowledgementMode == AcknowledgementMode.Transactional; }
