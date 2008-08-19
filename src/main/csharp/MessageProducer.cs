@@ -235,15 +235,18 @@ namespace Apache.NMS.MSMQ
 			set { timeToLive = value; }
 		}
 
+		/// <summary>
+		/// The default timeout for network requests.
+		/// </summary>
 		public TimeSpan RequestTimeout
 		{
-			get { return TimeSpan.FromMilliseconds(Timeout.Infinite); }
-			set {  }
+			get { return NMSConstants.defaultRequestTimeout; }
+			set { }
 		}
 
 		byte IMessageProducer.Priority
 		{
-			get { return 5; }
+			get { return NMSConstants.defaultPriority; }
 			set {  }
 		}
 
