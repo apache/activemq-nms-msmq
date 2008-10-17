@@ -50,7 +50,7 @@ namespace Apache.NMS.MSMQ
 
         public bool Contains(Object key)
         {
-            return dictionary.ContainsKey((string) key);
+            return dictionary.Contains(key);
         }
 
         public void Remove(Object key)
