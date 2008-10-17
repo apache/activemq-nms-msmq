@@ -55,10 +55,10 @@
             </summary>
         </member>
         <member name="T:Apache.NMS.MSMQ.Connection">
-             <summary>
-             Represents a NMS connection MSMQ.  Since the underlying MSMQ APIs are actually
-             connectionless, NMS connection in the MSMQ case are not expensive operations.
-             </summary>
+            <summary>
+            Represents a NMS connection MSMQ.  Since the underlying MSMQ APIs are actually
+            connectionless, NMS connection in the MSMQ case are not expensive operations.
+            </summary>
             
         </member>
         <member name="M:Apache.NMS.MSMQ.Connection.Start">
