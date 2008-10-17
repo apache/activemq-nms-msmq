@@ -17,7 +17,7 @@
 using Apache.NMS;
 using System;
 using System.Collections;
-#if !MONO
+#if !NET_1_1
 using System.Collections.Generic;
 #endif
 
@@ -44,7 +44,7 @@ namespace Apache.NMS.MSMQ
         public const byte LIST_TYPE = 12;
         public const byte BIG_STRING_TYPE = 13;
 
-#if MONO
+#if NET_1_1
         private IDictionary dictionary = new Hashtable();
 #else
         private Dictionary<String, object> dictionary = new Dictionary<String, object>();
@@ -281,7 +281,7 @@ namespace Apache.NMS.MSMQ
         {
             String s = "{";
             bool first = true;
-#if MONO
+#if NET_1_1
             foreach (DictionaryEntry entry in dictionary)
 #else
             foreach (KeyValuePair<String, object> entry in dictionary)
