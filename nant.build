@@ -6,9 +6,9 @@
     The ASF licenses this file to You under the Apache License, Version 2.0
     (the "License"); you may not use this file except in compliance with
     the License.  You may obtain a copy of the License at
-   
+
     http://www.apache.org/licenses/LICENSE-2.0
-   
+
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,52 +19,28 @@
 
   <!-- ============================================================================================ -->
   <!--      I N I T I A L I Z A T I O N                                                             -->
-  <!-- ============================================================================================ -->  
-  <property name="basedir"                 
-           value="${project::get-base-directory()}"/>
-  <property name="project.name"
-           value="Apache.NMS.MSMQ"/>
- <property name="project.group"
-           value="org.apache.activemq"/>
-  <property name="project.version"
-           value="1.0" unless="${property::exists('project.version')}"/>
-  <property name="project.short_description"
-           value="Apache NMS for MSMQ Class Library"/>
-  <property name="project.description"
-           value="Apache NMS for MSMQ Class Library (.Net Messaging Library Implementation): An implementation of the NMS API for MSMQ"/>
-  
+  <!-- ============================================================================================ -->
+  <property name="basedir" value="${project::get-base-directory()}"/>
+  <property name="project.name" value="Apache.NMS.MSMQ"/>
+ <property name="project.group" value="org.apache.activemq"/>
+  <property name="project.version" value="1.1.0" unless="${property::exists('project.version')}"/>
+  <property name="project.short_description" value="Apache NMS for MSMQ Class Library"/>
+  <property name="project.description" value="Apache NMS for MSMQ Class Library (.Net Messaging Library Implementation): An implementation of the NMS API for MSMQ"/>
+
   <!-- Repository organized as: organization/module/version/plaform/artifact, platform might be something like 'all' or 'net-2.0/release' -->
-  <property name="nunit.dll" value="${basedir}/vendor/Apache.NMS/lib/${current.build.framework}/nunit.framework.dll" dynamic="true"/>
-  <property name="nunit.extensions.dll" value="${basedir}/vendor/Apache.NMS/lib/${current.build.framework}/nunit.framework.extensions.dll" dynamic="true"/>
-  <property name="Apache.NMS.dll" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.dll" dynamic="true"/>
-  <property name="Apache.NMS.pdb" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.pdb" dynamic="true"/>
-  <property name="Apache.NMS.xml" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.xml" dynamic="true"/>
-  <property name="Apache.NMS.Test.dll" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.Test.dll" dynamic="true"/>
-  <property name="Apache.NMS.Test.pdb" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.Test.pdb" dynamic="true"/>
-  <property name="Apache.NMS.Test.xml" value="${basedir}/vendor/Apache.NMS/build/${current.build.framework}/${current.build.config}/Apache.NMS.Test.xml" dynamic="true"/>
+  <property name="nunit.dll" value="${basedir}/lib/${current.build.framework}/nunit.framework.dll" dynamic="true"/>
+  <property name="Apache.NMS.dll" value="${basedir}/vendor/Apache.NMS/${current.build.framework}/Apache.NMS.dll" dynamic="true"/>
+  <property name="Apache.NMS.pdb" value="${basedir}/vendor/Apache.NMS/${current.build.framework}/Apache.NMS.pdb" dynamic="true"/>
+  <property name="Apache.NMS.xml" value="${basedir}/vendor/Apache.NMS/${current.build.framework}/Apache.NMS.xml" dynamic="true"/>
+  <property name="Apache.NMS.Test.dll" value="${basedir}/vendor/Apache.NMS/${current.build.framework}/Apache.NMS.Test.dll" dynamic="true"/>
+  <property name="Apache.NMS.Test.pdb" value="${basedir}/vendor/Apache.NMS/${current.build.framework}/Apache.NMS.Test.pdb" dynamic="true"/>
+  <property name="Apache.NMS.Test.xml" value="${basedir}/vendor/Apache.NMS/${current.build.framework}/Apache.NMS.Test.xml" dynamic="true"/>
 
   <!-- Skip certain frameworks, since MSMQ is not supported on those platforms. -->
   <property name="build.netcf-2.0.skip" value="true"/>
   <property name="build.mono-2.0.skip" value="true"/>
-  
-  <target name="vendor-init" description="Initializes the vendor libraries.">
-    <nant buildfile="${basedir}/vendor/Apache.NMS/nant.build"/>
-  </target>
-
-  <target name="vendor-clean" description="Cleans the vendor libraries.">
-    <nant buildfile="${basedir}/vendor/Apache.NMS/nant.build" target="clean"/>
-  </target>
-
-  <target name="clean-init" depends="vendor-clean" description="Initialize the clean target.">
-  </target>
 
   <target name="dependency-init" description="Initializes build dependencies">
-  
-    <!-- Build the vendor dependent assemblies first. -->
-    <if test="${not target::has-executed('vendor-init')}">
-      <call target="vendor-init"/>
-    </if>
-  
   	<assemblyfileset failonempty="true" id="dependencies">
       <include name="mscorlib.dll" asis="true"/>
       <include name="System.dll" asis="true"/>
@@ -72,7 +48,7 @@
       <include name="${lib.framework.dir}/System.Messaging.dll" />
       <include name="${Apache.NMS.dll}"/>
   	</assemblyfileset>
-  	
+
   	<assemblyfileset failonempty="true" id="test.dependencies">
       <include name="mscorlib.dll" asis="true"/>
       <include name="System.dll" asis="true"/>
@@ -82,8 +58,7 @@
       <include name="${Apache.NMS.Test.dll}"/>
       <include name="${build.bin.dir}/${project.name}.dll"/>
       <include name="${nunit.dll}"/>
-      <include name="${nunit.extensions.dll}"/>
-  	</assemblyfileset>  
+  	</assemblyfileset>
 
     <fileset id="content.filenames">
       <include name="LICENSE.txt"/>
@@ -106,15 +81,18 @@
     </fileset>
 
     <fileset id="deploy.filenames">
-      <include name="${project.name}.dll"/>
-      <include name="${project.name}.xml"/>
-      <include name="${project.name}.Test.dll"/>
-      <include name="${project.name}.Test.xml"/>
-      <include name="nmsprovider-*.config"/>
+      <include name="LICENSE.txt"/>
+      <include name="NOTICE.txt"/>
+      <include name="${build.bin.dir}/${project.name}.dll"/>
+      <include name="${build.bin.dir}/${project.name}.?db"/>
+      <include name="${build.bin.dir}/${project.name}.xml"/>
+      <include name="${build.bin.dir}/${project.name}.Test.dll"/>
+      <include name="${build.bin.dir}/${project.name}.Test.?db"/>
+      <include name="${build.bin.dir}/${project.name}.Test.xml"/>
+      <include name="${build.bin.dir}/nmsprovider-*.config"/>
     </fileset>
   </target>
 
-  <!-- Load the common target definitions  -->
-	<include buildfile="${basedir}/vendor/Apache.NMS/nant-common.xml"/>
-
+	<!-- Load the common target definitions  -->
+	<include buildfile="${basedir}/nant-common.xml"/>
 </project>
