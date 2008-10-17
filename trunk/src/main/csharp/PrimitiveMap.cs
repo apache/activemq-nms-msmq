@@ -17,9 +17,6 @@
 using Apache.NMS;
 using System;
 using System.Collections;
-#if !MONO
-using System.Collections.Generic;
-#endif
 
 namespace Apache.NMS.MSMQ
 {
@@ -44,11 +41,7 @@ namespace Apache.NMS.MSMQ
         public const byte LIST_TYPE = 12;
         public const byte BIG_STRING_TYPE = 13;
 
-#if MONO
-        private IDictionary dictionary = new Hashtable();
-#else
-        private Dictionary<String, object> dictionary = new Dictionary<String, object>();
-#endif
+		private IDictionary dictionary = Hashtable.Synchronized(new Hashtable());
 
         public void Clear()
         {
@@ -57,7 +50,7 @@ namespace Apache.NMS.MSMQ
 
         public bool Contains(Object key)
         {
-            return dictionary.ContainsKey((string) key);
+            return dictionary.Contains(key);
         }
 
         public void Remove(Object key)
@@ -247,7 +240,6 @@ namespace Apache.NMS.MSMQ
             dictionary[key] = value;
         }
 
-
         protected virtual Object GetValue(String key)
         {
             return dictionary[key];
@@ -279,25 +271,24 @@ namespace Apache.NMS.MSMQ
         /// <returns>A string</returns>
         public override String ToString()
         {
-            String s = "{";
-            bool first = true;
-#if MONO
-            foreach (DictionaryEntry entry in dictionary)
-#else
-            foreach (KeyValuePair<String, object> entry in dictionary)
-#endif
-            {
-                if (!first)
-                {
-                    s += ", ";
-                }
-                first = false;
-                String name = (String)entry.Key;
-                Object value = entry.Value;
-                s += name + "=" + value;
-            }
-            s += "}";
-            return s;
+			String s="{";
+			bool first=true;
+			lock(dictionary.SyncRoot)
+			{
+				foreach(DictionaryEntry entry in dictionary)
+				{
+					if(!first)
+					{
+						s+=", ";
+					}
+					first=false;
+					String name = (String) entry.Key;
+					Object value = entry.Value;
+					s += name + "=" + value;
+				}
+			}
+			s += "}";
+			return s;
         }
     }
 }
