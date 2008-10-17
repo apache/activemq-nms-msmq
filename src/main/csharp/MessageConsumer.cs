@@ -90,7 +90,7 @@ namespace Apache.NMS.MSMQ
 		protected virtual void StartAsyncDelivery()
 		{
 			if (asyncDelivery.CompareAndSet(false, true)) {
-				Thread thread = new Thread(DispatchLoop);
+				Thread thread = new Thread(new ThreadStart(DispatchLoop));
 				thread.IsBackground = true;
 				thread.Start();
 			}
