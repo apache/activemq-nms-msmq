@@ -24,17 +24,43 @@ namespace Apache.NMS.MSMQ
     /// </summary>
     public class ConnectionFactory : IConnectionFactory
     {
-		public ConnectionFactory()
-		{
-		}
+        public const string DEFAULT_BROKER_URL = "msmq://localhost";
+        public const string ENV_BROKER_URL = "MSMQ_BROKER_URL";
 
-        public ConnectionFactory(String brokerUri)
+        public static string GetDefaultBrokerUrl()
+        {
+            string answer = Environment.GetEnvironmentVariable(ENV_BROKER_URL);
+            if (answer == null)
+            {
+                answer = DEFAULT_BROKER_URL;
+            }
+            return answer;
+        }
+
+        public ConnectionFactory()
+            : this(GetDefaultBrokerUrl())
         {
         }
 
-        public ConnectionFactory(String brokerUri, string clientID)
-		{
-		}
+        public ConnectionFactory(string brokerUri)
+            : this(brokerUri, null)
+        {
+        }
+
+        public ConnectionFactory(string brokerUri, string clientID)
+            : this(new Uri(brokerUri), clientID)
+        {
+        }
+
+        public ConnectionFactory(Uri brokerUri)
+            : this(brokerUri, null)
+        {
+        }
+
+        public ConnectionFactory(Uri brokerUri, string clientID)
+        {
+            
+        }
 
     	/// <summary>
 		/// Creates a new connection to MSMQ.
