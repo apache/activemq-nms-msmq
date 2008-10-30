@@ -38,6 +38,7 @@
     <SccLocalPath>Svn</SccLocalPath>
     <SccAuxPath>Svn</SccAuxPath>
     <SccProvider>SubversionScc</SccProvider>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -106,4 +107,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
+  <PropertyGroup>
+    <PreBuildEvent>cd $(ProjectDir)
+nant -nologo download-vendor -D:vendor.build.config=$(ConfigurationName) -D:vendor.build.framework=net-2.0</PreBuildEvent>
+    <PostBuildEvent>cd $(ProjectDir)
+nant -nologo -q install-all -D:compile.skip=true</PostBuildEvent>
+  </PropertyGroup>
 </Project>
