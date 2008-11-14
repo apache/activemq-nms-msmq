@@ -99,6 +99,8 @@
     </fileset>
 
     <fileset id="install.filenames">
+      <include name="LICENSE.txt"/>
+      <include name="NOTICE.txt"/>
       <include name="${project.name}.dll"/>
       <include name="${project.name}.pdb"/>
       <include name="nmsprovider-msmq.config"/>
