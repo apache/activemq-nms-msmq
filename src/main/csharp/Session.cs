@@ -73,7 +73,7 @@ namespace Apache.NMS.MSMQ
 		{
 			if(selector != null)
 			{
-				throw new NotImplementedException("Selectors are not supported by MSMQ");
+				throw new NotSupportedException("Selectors are not supported by MSMQ");
 			}
 			MessageQueue queue = MessageConverter.ToMsmqDestination(destination);
 			return new MessageConsumer(this, acknowledgementMode, queue);
@@ -81,12 +81,12 @@ namespace Apache.NMS.MSMQ
 
 		public IMessageConsumer CreateDurableConsumer(ITopic destination, string name, string selector, bool noLocal)
 		{
-			throw new NotImplementedException("Durable Topic subscribers are not supported by MSMQ");
+			throw new NotSupportedException("Durable Topic subscribers are not supported by MSMQ");
 		}
 
 		public void DeleteDurableConsumer(string name)
 		{
-			throw new NotImplementedException("Durable Topic subscribers are not supported by MSMQ");
+			throw new NotSupportedException("Durable Topic subscribers are not supported by MSMQ");
 		}
 
 		public IQueue GetQueue(string name)
@@ -96,19 +96,28 @@ namespace Apache.NMS.MSMQ
 		
 		public ITopic GetTopic(string name)
 		{
-			throw new NotImplementedException("Topics are not supported by MSMQ");
+			throw new NotSupportedException("Topics are not supported by MSMQ");
 		}
 		
 		public ITemporaryQueue CreateTemporaryQueue()
 		{
-			throw new NotImplementedException("Tempoary Queues are not supported by MSMQ");
+			throw new NotSupportedException("Tempoary Queues are not supported by MSMQ");
 		}
 		
 		public ITemporaryTopic CreateTemporaryTopic()
 		{
-			throw new NotImplementedException("Tempoary Topics are not supported by MSMQ");
+			throw new NotSupportedException("Tempoary Topics are not supported by MSMQ");
 		}
-		
+
+		/// <summary>
+		/// Delete a destination (Queue, Topic, Temp Queue, Temp Topic).
+		/// </summary>
+		public void DeleteDestination(IDestination destination)
+		{
+			// TODO: Implement if possible.  If not possible, then change exception to NotSupportedException().
+			throw new NotImplementedException();
+		}
+
 		public IMessage CreateMessage()
 		{
 			BaseMessage answer = new BaseMessage();
