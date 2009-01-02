@@ -185,6 +185,11 @@
             MSQM provider of ISession
             </summary>
         </member>
+        <member name="M:Apache.NMS.MSMQ.Session.DeleteDestination(Apache.NMS.IDestination)">
+            <summary>
+            Delete a destination (Queue, Topic, Temp Queue, Temp Topic).
+            </summary>
+        </member>
         <member name="P:Apache.NMS.MSMQ.Session.RequestTimeout">
             <summary>
             The default timeout for network requests.
