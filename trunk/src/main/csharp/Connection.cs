@@ -14,33 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Apache.NMS;
 using System;
 
 namespace Apache.NMS.MSMQ
 {
-    /// <summary>
-    /// Represents a NMS connection MSMQ.  Since the underlying MSMQ APIs are actually
-    /// connectionless, NMS connection in the MSMQ case are not expensive operations.
-    /// </summary>
-    ///
-    public class Connection : IConnection
-    {
-        
-        private AcknowledgementMode acknowledgementMode = AcknowledgementMode.AutoAcknowledge;
-        private IMessageConverter messageConverter = new DefaultMessageConverter();
+	/// <summary>
+	/// Represents a NMS connection MSMQ.  Since the underlying MSMQ APIs are actually
+	/// connectionless, NMS connection in the MSMQ case are not expensive operations.
+	/// </summary>
+	///
+	public class Connection : IConnection
+	{
 
-        private bool connected;
-        private bool closed;
-        private string clientId;
+		private AcknowledgementMode acknowledgementMode = AcknowledgementMode.AutoAcknowledge;
+		private IMessageConverter messageConverter = new DefaultMessageConverter();
 
-        /// <summary>
-        /// Starts message delivery for this connection.
-        /// </summary>
-        public void Start()
-        {
-            CheckConnected();
-        }
+		private bool connected;
+		private bool closed;
+		private string clientId;
+
+		/// <summary>
+		/// Starts message delivery for this connection.
+		/// </summary>
+		public void Start()
+		{
+			CheckConnected();
+		}
 
 		/// <summary>
 		/// This property determines if the asynchronous message delivery of incoming
@@ -55,34 +54,34 @@ namespace Apache.NMS.MSMQ
 		}
 
 		/// <summary>
-        /// Stop message delivery for this connection.
-        /// </summary>
-        public void Stop()
-        {
-            CheckConnected();
-        }
-        
-        /// <summary>
-        /// Creates a new session to work on this connection
-        /// </summary>
-        public ISession CreateSession()
-        {
-            return CreateSession(acknowledgementMode);
-        }
-        
-        /// <summary>
-        /// Creates a new session to work on this connection
-        /// </summary>
-        public ISession CreateSession(AcknowledgementMode mode)
-        {
-            CheckConnected();
-            return new Session(this, mode);
-        }
+		/// Stop message delivery for this connection.
+		/// </summary>
+		public void Stop()
+		{
+			CheckConnected();
+		}
 
-        public void Dispose()
-        {
-            closed = true;
-        }
+		/// <summary>
+		/// Creates a new session to work on this connection
+		/// </summary>
+		public ISession CreateSession()
+		{
+			return CreateSession(acknowledgementMode);
+		}
+
+		/// <summary>
+		/// Creates a new session to work on this connection
+		/// </summary>
+		public ISession CreateSession(AcknowledgementMode mode)
+		{
+			CheckConnected();
+			return new Session(this, mode);
+		}
+
+		public void Dispose()
+		{
+			closed = true;
+		}
 
 		/// <summary>
 		/// The default timeout for network requests.
@@ -94,53 +93,54 @@ namespace Apache.NMS.MSMQ
 		}
 
 		public AcknowledgementMode AcknowledgementMode
-        {
-            get { return acknowledgementMode; }
-            set { acknowledgementMode = value; }
-        }
+		{
+			get { return acknowledgementMode; }
+			set { acknowledgementMode = value; }
+		}
 
-        public IMessageConverter MessageConverter
-        {
-            get { return messageConverter; }
-            set { messageConverter = value; }
-        }
+		public IMessageConverter MessageConverter
+		{
+			get { return messageConverter; }
+			set { messageConverter = value; }
+		}
 
-        public string ClientId
-        {
-            get { return clientId; }
-            set {
-                if (connected)
-                {
-                    throw new NMSException("You cannot change the ClientId once the Connection is connected");
-                }
-                clientId = value;
-            }
-        }
+		public string ClientId
+		{
+			get { return clientId; }
+			set
+			{
+				if(connected)
+				{
+					throw new NMSException("You cannot change the ClientId once the Connection is connected");
+				}
+				clientId = value;
+			}
+		}
 
-        public event ExceptionListener ExceptionListener;
+		public event ExceptionListener ExceptionListener;
 
-        protected void CheckConnected()
-        {
-            if (closed)
-            {
-                throw new NMSException("Connection Closed");
-            }
-            if (!connected)
-            {
-                connected = true;
-                // now lets send the connection and see if we get an ack/nak
-                // TODO: establish a connection
-            }
-        }
+		protected void CheckConnected()
+		{
+			if(closed)
+			{
+				throw new NMSException("Connection Closed");
+			}
+			if(!connected)
+			{
+				connected = true;
+				// now lets send the connection and see if we get an ack/nak
+				// TODO: establish a connection
+			}
+		}
 
-        public void Close()
-        {
-            Dispose();
-        }
+		public void Close()
+		{
+			Dispose();
+		}
 
 		public void HandleException(Exception e)
 		{
-			if (ExceptionListener != null)
+			if(ExceptionListener != null)
 			{
 				ExceptionListener(e);
 			}
@@ -148,8 +148,8 @@ namespace Apache.NMS.MSMQ
 			{
 				Tracer.Error(e);
 			}
-			
+
 		}
-        	        
-    }
+
+	}
 }

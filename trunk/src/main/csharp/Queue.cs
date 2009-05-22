@@ -14,45 +14,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Apache.NMS;
 using System;
 
 namespace Apache.NMS.MSMQ
 {
-	
+
 	/// <summary>
 	/// Summary description for Queue.
 	/// </summary>
 	public class Queue : Destination, IQueue
-    {
-		
-        public Queue() : base()
-        {
-        }
-		
-        public Queue(String name) : base(name)
-        {
-        }
-		
+	{
+
+		public Queue()
+			: base()
+		{
+		}
+
+		public Queue(String name)
+			: base(name)
+		{
+		}
+
 		override public DestinationType DestinationType
 		{
-			get {
+			get
+			{
 				return DestinationType.Queue;
 			}
 		}
-		
-        public String QueueName
-        {
-            get { return Path; }
-        }
-        
-        
-        public override Destination CreateDestination(String name)
-        {
-            return new Queue(name);
-        }
 
-        
-    }
+		public String QueueName
+		{
+			get { return Path; }
+		}
+
+
+		public override Destination CreateDestination(String name)
+		{
+			return new Queue(name);
+		}
+
+
+	}
 }
 

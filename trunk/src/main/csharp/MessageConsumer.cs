@@ -1,3 +1,6 @@
+using System;
+using System.Messaging;
+using System.Threading;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,74 +17,72 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Apache.NMS;
 using Apache.NMS.Util;
-using System;
-using System.Messaging;
-using System.Threading;
 
 namespace Apache.NMS.MSMQ
 {
-    /// <summary>
-    /// An object capable of receiving messages from some destination
-    /// </summary>
-    public class MessageConsumer : IMessageConsumer
-    {
+	/// <summary>
+	/// An object capable of receiving messages from some destination
+	/// </summary>
+	public class MessageConsumer : IMessageConsumer
+	{
 		protected TimeSpan zeroTimeout = new TimeSpan(0);
-		
-        private readonly Session session;
-        private readonly AcknowledgementMode acknowledgementMode;
+
+		private readonly Session session;
+		private readonly AcknowledgementMode acknowledgementMode;
 		private MessageQueue messageQueue;
 		private event MessageListener listener;
 		private AtomicBoolean asyncDelivery = new AtomicBoolean(false);
-		
-        public MessageConsumer(Session session, AcknowledgementMode acknowledgementMode, MessageQueue messageQueue)
-        {
-            this.session = session;
-            this.acknowledgementMode = acknowledgementMode;
+
+		public MessageConsumer(Session session, AcknowledgementMode acknowledgementMode, MessageQueue messageQueue)
+		{
+			this.session = session;
+			this.acknowledgementMode = acknowledgementMode;
 			this.messageQueue = messageQueue;
-        }
-        
-        public event MessageListener Listener
-        {
-			add {
+		}
+
+		public event MessageListener Listener
+		{
+			add
+			{
 				listener += value;
 				StartAsyncDelivery();
 			}
-			remove {
+			remove
+			{
 				listener -= value;
 			}
-        }
-		
-        public IMessage Receive()
-        {
+		}
+
+		public IMessage Receive()
+		{
 			Message message = messageQueue.Receive();
 			return ToNmsMessage(message);
-        }
+		}
 
-        public IMessage Receive(TimeSpan timeout)
-        {
+		public IMessage Receive(TimeSpan timeout)
+		{
 			Message message = messageQueue.Receive(timeout);
 			return ToNmsMessage(message);
-        }
+		}
 
-        public IMessage ReceiveNoWait()
-        {
+		public IMessage ReceiveNoWait()
+		{
 			Message message = messageQueue.Receive(zeroTimeout);
 			return ToNmsMessage(message);
-        }
+		}
 
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
+		public void Dispose()
+		{
+			throw new NotImplementedException();
+		}
 
-        public void Close()
-        {
+		public void Close()
+		{
 			StopAsyncDelivery();
-            Dispose();
-        }
-		
+			Dispose();
+		}
+
 		public void StopAsyncDelivery()
 		{
 			asyncDelivery.Value = false;
@@ -89,26 +90,27 @@ namespace Apache.NMS.MSMQ
 
 		protected virtual void StartAsyncDelivery()
 		{
-			if (asyncDelivery.CompareAndSet(false, true)) {
+			if(asyncDelivery.CompareAndSet(false, true))
+			{
 				Thread thread = new Thread(new ThreadStart(DispatchLoop));
 				thread.IsBackground = true;
 				thread.Start();
 			}
 		}
-		
+
 		protected virtual void DispatchLoop()
 		{
 			Tracer.Info("Starting dispatcher thread consumer: " + this);
-			while (asyncDelivery.Value)
+			while(asyncDelivery.Value)
 			{
 				IMessage message = Receive();
-				if (message != null)
+				if(message != null)
 				{
 					try
 					{
 						listener(message);
 					}
-					catch (Exception e)
+					catch(Exception e)
 					{
 						HandleAsyncException(e);
 					}
@@ -121,14 +123,14 @@ namespace Apache.NMS.MSMQ
 		{
 			session.Connection.HandleException(e);
 		}
-		
+
 		protected virtual IMessage ToNmsMessage(Message message)
 		{
-			if (message == null)
+			if(message == null)
 			{
 				return null;
 			}
 			return session.MessageConverter.ToNmsMessage(message);
 		}
-    }
+	}
 }

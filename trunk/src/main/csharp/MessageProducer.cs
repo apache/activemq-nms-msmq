@@ -16,8 +16,6 @@
  */
 using System;
 using System.Messaging;
-using System.Threading;
-using Apache.NMS;
 
 namespace Apache.NMS.MSMQ
 {
@@ -26,17 +24,17 @@ namespace Apache.NMS.MSMQ
 	/// </summary>
 	public class MessageProducer : IMessageProducer
 	{
-		
+
 		private readonly Session session;
 		private Destination destination;
 
 		//private long messageCounter;
-		private bool persistent;
+		private MsgDeliveryMode deliveryMode;
 		private TimeSpan timeToLive;
-		private byte priority;
+		private MsgPriority priority;
 		private bool disableMessageID;
 		private bool disableMessageTimestamp;
-		
+
 		private MessageQueue messageQueue;
 		private IMessageConverter messageConverter;
 
@@ -45,7 +43,7 @@ namespace Apache.NMS.MSMQ
 			this.session = session;
 			this.destination = destination;
 			MessageConverter = session.MessageConverter;
-			if (destination != null)
+			if(destination != null)
 			{
 				messageQueue = openMessageQueue(destination);
 			}
@@ -53,31 +51,32 @@ namespace Apache.NMS.MSMQ
 
 		private MessageQueue openMessageQueue(Destination dest)
 		{
-			MessageQueue rc=null;
+			MessageQueue rc = null;
 			try
 			{
-				if (!MessageQueue.Exists(dest.Path))
+				if(!MessageQueue.Exists(dest.Path))
 				{
 					// create the new message queue and make it transactional
 					rc = MessageQueue.Create(dest.Path, session.Transacted);
 					this.destination.Path = rc.Path;
-				} else
+				}
+				else
 				{
 					rc = new MessageQueue(dest.Path);
 					this.destination.Path = rc.Path;
-					if( !rc.CanWrite )
+					if(!rc.CanWrite)
 					{
 						throw new NMSSecurityException("Do not have write access to: " + dest);
 					}
 				}
 			}
-			catch( Exception e )
+			catch(Exception e)
 			{
-				if( rc!=null )
+				if(rc != null)
 				{
 					rc.Dispose();
 				}
-				throw new NMSException(e.Message+": "+dest, e);
+				throw new NMSException(e.Message + ": " + dest, e);
 			}
 			return rc;
 		}
@@ -87,28 +86,28 @@ namespace Apache.NMS.MSMQ
 			Send(Destination, message);
 		}
 
-		public void Send(IMessage message, bool persistent, byte priority, TimeSpan timeToLive)
+		public void Send(IMessage message, MsgDeliveryMode deliveryMode, MsgPriority priority, TimeSpan timeToLive)
 		{
-			Send(Destination, message, persistent, priority, timeToLive);
+			Send(Destination, message, deliveryMode, priority, timeToLive);
 		}
 
 		public void Send(IDestination destination, IMessage message)
 		{
-			Send(destination, message, Persistent, Priority, TimeToLive);
+			Send(destination, message, DeliveryMode, Priority, TimeToLive);
 		}
-		
-		public void Send(IDestination destination, IMessage imessage, bool persistent, byte priority, TimeSpan timeToLive)
+
+		public void Send(IDestination destination, IMessage imessage, MsgDeliveryMode deliveryMode, MsgPriority priority, TimeSpan timeToLive)
 		{
 			BaseMessage message = (BaseMessage) imessage;
-			MessageQueue mq=null;
+			MessageQueue mq = null;
 			MessageQueue responseQueue = null;
 			MessageQueueTransaction transaction = null;
 			try
 			{
 				// Locate the MSMQ Queue we will be sending to
-				if (messageQueue != null)
+				if(messageQueue != null)
 				{
-					if( destination.Equals(this.destination) )
+					if(destination.Equals(this.destination))
 					{
 						mq = messageQueue;
 					}
@@ -121,23 +120,24 @@ namespace Apache.NMS.MSMQ
 				{
 					mq = openMessageQueue((Destination) destination);
 				}
-				
+
 				// Convert the Mesasge into a MSMQ message
-				message.NMSPersistent = persistent;
+				message.NMSDeliveryMode = deliveryMode;
 				message.NMSTimeToLive = timeToLive;
 				message.NMSPriority = priority;
-				
+
 				// message.NMSTimestamp = new DateTime().Date.;
 				Message msg = messageConverter.ToMsmqMessage(message);
 				// TODO: message.NMSMessageId =
 				// Now Send the message
-				if( mq.Transactional )
+				if(mq.Transactional)
 				{
-					if (session.Transacted)
+					if(session.Transacted)
 					{
 						mq.Send(msg, session.MessageQueueTransaction);
-						
-					} else
+
+					}
+					else
 					{
 						// Start our own mini transaction here to send the message.
 						transaction = new MessageQueueTransaction();
@@ -145,9 +145,10 @@ namespace Apache.NMS.MSMQ
 						mq.Send(msg, transaction);
 						transaction.Commit();
 					}
-				} else
+				}
+				else
 				{
-					if( session.Transacted )
+					if(session.Transacted)
 					{
 						// We may want to raise an exception here since app requested
 						// a transeced NMS session, but is using a non transacted message queue
@@ -155,19 +156,22 @@ namespace Apache.NMS.MSMQ
 					}
 					mq.Send(msg);
 				}
-				
-			} finally
+
+			}
+			finally
 			{
 				// Cleanup
-				if(transaction!=null)
+				if(transaction != null)
 				{
 					transaction.Dispose();
 				}
-				if (responseQueue != null)
+
+				if(responseQueue != null)
 				{
 					responseQueue.Dispose();
 				}
-				if( mq!=null && mq!=messageQueue )
+
+				if(mq != null && mq != messageQueue)
 				{
 					mq.Dispose();
 				}
@@ -182,51 +186,51 @@ namespace Apache.NMS.MSMQ
 				messageQueue = null;
 			}
 		}
-		
+
 		public void Dispose()
 		{
 			Close();
 		}
-		
+
 		public IMessage CreateMessage()
 		{
 			return session.CreateMessage();
 		}
-		
+
 		public ITextMessage CreateTextMessage()
 		{
 			return session.CreateTextMessage();
 		}
-		
+
 		public ITextMessage CreateTextMessage(String text)
 		{
 			return session.CreateTextMessage(text);
 		}
-		
+
 		public IMapMessage CreateMapMessage()
 		{
 			return session.CreateMapMessage();
 		}
-		
+
 		public IObjectMessage CreateObjectMessage(Object body)
 		{
 			return session.CreateObjectMessage(body);
 		}
-		
+
 		public IBytesMessage CreateBytesMessage()
 		{
 			return session.CreateBytesMessage();
 		}
-		
+
 		public IBytesMessage CreateBytesMessage(byte[] body)
 		{
 			return session.CreateBytesMessage(body);
 		}
 
-		public bool Persistent
+		public MsgDeliveryMode DeliveryMode
 		{
-			get { return persistent; }
-			set { persistent = value; }
+			get { return deliveryMode; }
+			set { deliveryMode = value; }
 		}
 
 		public TimeSpan TimeToLive
@@ -244,19 +248,13 @@ namespace Apache.NMS.MSMQ
 			set { }
 		}
 
-		byte IMessageProducer.Priority
-		{
-			get { return NMSConstants.defaultPriority; }
-			set {  }
-		}
-
 		public IDestination Destination
 		{
 			get { return destination; }
 			set { destination = (Destination) value; }
 		}
-		
-		public byte Priority
+
+		public MsgPriority Priority
 		{
 			get { return priority; }
 			set { priority = value; }
@@ -279,6 +277,5 @@ namespace Apache.NMS.MSMQ
 			get { return messageConverter; }
 			set { messageConverter = value; }
 		}
-
 	}
 }
