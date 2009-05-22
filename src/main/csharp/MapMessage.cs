@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Apache.NMS;
-using System;
 
 
 namespace Apache.NMS.MSMQ
 {
 	public class MapMessage : BaseMessage, IMapMessage
-    {
-        private PrimitiveMap body = new PrimitiveMap();
-                
-        public IPrimitiveMap Body
-        {
-            get { return body; }
-        }
-    }
+	{
+		private PrimitiveMap body = new PrimitiveMap();
+
+		public IPrimitiveMap Body
+		{
+			get { return body; }
+		}
+	}
 }
 

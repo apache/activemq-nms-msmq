@@ -15,68 +15,67 @@
  * limitations under the License.
  */
 using System;
-using Apache.NMS;
 
 namespace Apache.NMS.MSMQ
 {
-    /// <summary>
-    /// A Factory that can estbalish NMS connections to MSMQ
-    /// </summary>
-    public class ConnectionFactory : IConnectionFactory
-    {
-        public const string DEFAULT_BROKER_URL = "msmq://localhost";
-        public const string ENV_BROKER_URL = "MSMQ_BROKER_URL";
+	/// <summary>
+	/// A Factory that can estbalish NMS connections to MSMQ
+	/// </summary>
+	public class ConnectionFactory : IConnectionFactory
+	{
+		public const string DEFAULT_BROKER_URL = "msmq://localhost";
+		public const string ENV_BROKER_URL = "MSMQ_BROKER_URL";
 
-        public static string GetDefaultBrokerUrl()
-        {
-            string answer = Environment.GetEnvironmentVariable(ENV_BROKER_URL);
-            if (answer == null)
-            {
-                answer = DEFAULT_BROKER_URL;
-            }
-            return answer;
-        }
+		public static string GetDefaultBrokerUrl()
+		{
+			string answer = Environment.GetEnvironmentVariable(ENV_BROKER_URL);
+			if(answer == null)
+			{
+				answer = DEFAULT_BROKER_URL;
+			}
+			return answer;
+		}
 
-        public ConnectionFactory()
-            : this(GetDefaultBrokerUrl())
-        {
-        }
+		public ConnectionFactory()
+			: this(GetDefaultBrokerUrl())
+		{
+		}
 
-        public ConnectionFactory(string brokerUri)
-            : this(brokerUri, null)
-        {
-        }
+		public ConnectionFactory(string brokerUri)
+			: this(brokerUri, null)
+		{
+		}
 
-        public ConnectionFactory(string brokerUri, string clientID)
-            : this(new Uri(brokerUri), clientID)
-        {
-        }
+		public ConnectionFactory(string brokerUri, string clientID)
+			: this(new Uri(brokerUri), clientID)
+		{
+		}
 
-        public ConnectionFactory(Uri brokerUri)
-            : this(brokerUri, null)
-        {
-        }
+		public ConnectionFactory(Uri brokerUri)
+			: this(brokerUri, null)
+		{
+		}
 
-        public ConnectionFactory(Uri brokerUri, string clientID)
-        {
-            
-        }
+		public ConnectionFactory(Uri brokerUri, string clientID)
+		{
 
-    	/// <summary>
+		}
+
+		/// <summary>
 		/// Creates a new connection to MSMQ.
 		/// </summary>
 		public IConnection CreateConnection()
-        {
-            return new Connection();
-        }
+		{
+			return new Connection();
+		}
 
 		/// <summary>
 		/// Creates a new connection to MSMQ.
 		/// </summary>
 		public IConnection CreateConnection(string userName, string password)
-        {
-            return new Connection();
-        }
+		{
+			return new Connection();
+		}
 
 		/// <summary>
 		/// Creates a new connection to MSMQ.

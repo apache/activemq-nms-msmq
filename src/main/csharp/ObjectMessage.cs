@@ -15,9 +15,6 @@
  * limitations under the License.
  */
 
-using Apache.NMS;
-using System;
-using System.Collections;
 using System.IO;
 
 #if !(PocketPC||NETCF||NETCF_2_0)
@@ -27,67 +24,71 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Apache.NMS.MSMQ
 {
-    public class ObjectMessage : BaseMessage, IObjectMessage
-    {
+	public class ObjectMessage : BaseMessage, IObjectMessage
+	{
 		private object body;
-		#if !(PocketPC||NETCF||NETCF_2_0)
+#if !(PocketPC||NETCF||NETCF_2_0)
 		private IFormatter formatter;
-		#endif
-		
+#endif
+
 		public ObjectMessage()
 		{
 		}
-		
+
 		public ObjectMessage(object body)
 		{
 			this.body = body;
 		}
-		
+
 		public object Body
 		{
-			get {
-				#if !(PocketPC||NETCF||NETCF_2_0)
-				if (body == null)
+			get
+			{
+#if !(PocketPC||NETCF||NETCF_2_0)
+				if(body == null)
 				{
 					body = Formatter.Deserialize(new MemoryStream(Content));
 				}
-				#else
-				#endif
+#else
+#endif
 				return body;
 			}
-			
-			set {
-				#if !(PocketPC||NETCF||NETCF_2_0)
+
+			set
+			{
+#if !(PocketPC||NETCF||NETCF_2_0)
 				body = value;
-				#else
-                throw new NotImplementedException();
-				#endif
+#else
+				throw new NotImplementedException();
+#endif
 			}
 		}
-		
-		
-		#if !(PocketPC||NETCF||NETCF_2_0)
+
+
+#if !(PocketPC||NETCF||NETCF_2_0)
 		public IFormatter Formatter
 		{
-			get {
-				if (formatter == null)
+			get
+			{
+				if(formatter == null)
 				{
 					formatter = new BinaryFormatter();
 				}
 				return formatter;
 			}
-			
-			set {
+
+			set
+			{
 				formatter = value;
 			}
 		}
-	
-		#endif
+
+#endif
 	}
 }
 
 
-		
 
-		
+
+
 

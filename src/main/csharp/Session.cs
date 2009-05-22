@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Apache.NMS;
 using System;
 using System.Messaging;
 
@@ -35,7 +34,7 @@ namespace Apache.NMS.MSMQ
 			this.connection = connection;
 			this.acknowledgementMode = acknowledgementMode;
 			MessageConverter = connection.MessageConverter;
-			if (this.acknowledgementMode == AcknowledgementMode.Transactional)
+			if(this.acknowledgementMode == AcknowledgementMode.Transactional)
 			{
 				MessageQueueTransaction = new MessageQueueTransaction();
 			}
@@ -43,12 +42,12 @@ namespace Apache.NMS.MSMQ
 
 		public void Dispose()
 		{
-			if(MessageQueueTransaction!=null)
+			if(MessageQueueTransaction != null)
 			{
 				MessageQueueTransaction.Dispose();
 			}
 		}
-		
+
 		public IMessageProducer CreateProducer()
 		{
 			return CreateProducer(null);
@@ -93,17 +92,17 @@ namespace Apache.NMS.MSMQ
 		{
 			return new Queue(name);
 		}
-		
+
 		public ITopic GetTopic(string name)
 		{
 			throw new NotSupportedException("Topics are not supported by MSMQ");
 		}
-		
+
 		public ITemporaryQueue CreateTemporaryQueue()
 		{
 			throw new NotSupportedException("Tempoary Queues are not supported by MSMQ");
 		}
-		
+
 		public ITemporaryTopic CreateTemporaryTopic()
 		{
 			throw new NotSupportedException("Tempoary Topics are not supported by MSMQ");
@@ -123,62 +122,62 @@ namespace Apache.NMS.MSMQ
 			BaseMessage answer = new BaseMessage();
 			return answer;
 		}
-		
-		
+
+
 		public ITextMessage CreateTextMessage()
 		{
 			TextMessage answer = new TextMessage();
 			return answer;
 		}
-		
+
 		public ITextMessage CreateTextMessage(string text)
 		{
 			TextMessage answer = new TextMessage(text);
 			return answer;
 		}
-		
+
 		public IMapMessage CreateMapMessage()
 		{
 			return new MapMessage();
 		}
-		
+
 		public IBytesMessage CreateBytesMessage()
 		{
 			return new BytesMessage();
 		}
-		
+
 		public IBytesMessage CreateBytesMessage(byte[] body)
 		{
 			BytesMessage answer = new BytesMessage();
 			answer.Content = body;
 			return answer;
 		}
-		
+
 		public IObjectMessage CreateObjectMessage(Object body)
 		{
 			ObjectMessage answer = new ObjectMessage();
 			answer.Body = body;
 			return answer;
 		}
-		
+
 		public void Commit()
 		{
-			if (! Transacted )
+			if(!Transacted)
 			{
 				throw new InvalidOperationException("You cannot perform a Commit() on a non-transacted session. Acknowlegement mode is: " + acknowledgementMode);
 			}
 			messageQueueTransaction.Commit();
 		}
-		
+
 		public void Rollback()
 		{
-			if (! Transacted)
+			if(!Transacted)
 			{
 				throw new InvalidOperationException("You cannot perform a Commit() on a non-transacted session. Acknowlegement mode is: " + acknowledgementMode);
 			}
 			messageQueueTransaction.Abort();
 		}
-		
+
 		// Properties
 		public Connection Connection
 		{
@@ -208,7 +207,7 @@ namespace Apache.NMS.MSMQ
 		{
 			get
 			{
-				if( messageQueueTransaction.Status != MessageQueueTransactionStatus.Pending )
+				if(messageQueueTransaction.Status != MessageQueueTransactionStatus.Pending)
 					messageQueueTransaction.Begin();
 				return messageQueueTransaction;
 			}

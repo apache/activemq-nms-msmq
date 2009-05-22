@@ -14,198 +14,156 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Apache.NMS;
 using System;
 
 namespace Apache.NMS.MSMQ
 {
 	public delegate void AcknowledgeHandler(BaseMessage baseMessage);
 
-    public class BaseMessage : IMessage
-    {
-        private PrimitiveMap propertiesMap = new PrimitiveMap();
-        private IDestination destination;
-        private string correlationId;
-        private TimeSpan timeToLive;
-        private string messageId;
-        private bool persistent;
-        private byte priority;
-        private Destination replyTo;
-        private string type;
-        private event AcknowledgeHandler Acknowledger;
-        private byte[] content;
-        private DateTime timestamp = new DateTime();
+	public class BaseMessage : IMessage
+	{
+		private PrimitiveMap propertiesMap = new PrimitiveMap();
+		private IDestination destination;
+		private string correlationId;
+		private TimeSpan timeToLive;
+		private string messageId;
+		private MsgDeliveryMode deliveryMode;
+		private MsgPriority priority;
+		private Destination replyTo;
+		private string type;
+		private event AcknowledgeHandler Acknowledger;
+		private byte[] content;
+		private DateTime timestamp = new DateTime();
 
-        public byte[] Content
-        {
-            get { return content; }
-            set { content = value; }
-        }
+		public byte[] Content
+		{
+			get { return content; }
+			set { content = value; }
+		}
 
-        public void Acknowledge()
-        {
-            if (Acknowledger == null)
+		public void Acknowledge()
+		{
+			if(Acknowledger == null)
 			{
-                throw new NMSException("No Acknowledger has been associated with this message: " + this);
+				throw new NMSException("No Acknowledger has been associated with this message: " + this);
 			}
-            else
+			else
 			{
-                Acknowledger(this);
-            }
-        }
-        
-        
-        // Properties
-        
-        public IPrimitiveMap Properties
-        {
-            get {
-				return propertiesMap;
-            }
-        }
-        
-        
-        // IMessage interface
-        
-        // NMS headers
-        
-        /// <summary>
-        /// The correlation ID used to correlate messages with conversations or long running business processes
-        /// </summary>
-        public string NMSCorrelationID
-        {
-            get {
-                return correlationId;
-            }
-            set {
-                correlationId = value;
-            }
-        }
-        
-        /// <summary>
-        /// The destination of the message
-        /// </summary>
-        public IDestination NMSDestination
-        {
-            get {
-                return destination;
-            }
-            set {
-                destination = value;
-            }
-        }
-        
-        /// <summary>
-        /// The time in milliseconds that this message should expire in
-        /// </summary>
-        public TimeSpan NMSTimeToLive
-        {
-            get {
-				return timeToLive;
-            }
-            set {
-				timeToLive = value;
-            }
-        }
-        
-        /// <summary>
-        /// The message ID which is set by the provider
-        /// </summary>
-        public string NMSMessageId
-        {
-            get {
-                return messageId;
-            }
-			set {
-				messageId = value;
+				Acknowledger(this);
 			}
-        }
-        
-        /// <summary>
-        /// Whether or not this message is persistent
-        /// </summary>
-        public bool NMSPersistent
-        {
-            get {
-                return persistent;
-            }
-            set {
-                persistent = value;
-            }
-        }
-        
-        /// <summary>
-        /// The Priority on this message
-        /// </summary>
-        public byte NMSPriority
-        {
-            get {
-                return priority;
-            }
-            set {
-                priority = value;
-            }
-        }
-        
-        /// <summary>
-        /// Returns true if this message has been redelivered to this or another consumer before being acknowledged successfully.
-        /// </summary>
-        public bool NMSRedelivered
-        {
-            get {
-                return false;
-            }
-        }
-        
-        
-        /// <summary>
-        /// The destination that the consumer of this message should send replies to
-        /// </summary>
-        public IDestination NMSReplyTo
-        {
-            get {
-                return replyTo;
-            }
-            set {
-                replyTo = (Destination) value;
-            }
-        }
-        
-        
-        /// <summary>
-        /// The timestamp the broker added to the message
-        /// </summary>
-        public DateTime NMSTimestamp
-        {
-            get {
-                return timestamp;
-            }
-        }
-        
-        /// <summary>
-        /// The type name of this message
-        /// </summary>
-        public string NMSType
-        {
-            get {
-                return type;
-            }
-            set {
-                type = value;
-            }
-        }
-        
+		}
 
-        public object GetObjectProperty(string name)
-        {
-            return null;
-        }
-        
-        public void SetObjectProperty(string name, object value)
-        {
-        }
-                
-        
-    }
+		// Properties
+
+		public IPrimitiveMap Properties
+		{
+			get { return propertiesMap; }
+		}
+
+
+		// IMessage interface
+
+		// NMS headers
+
+		/// <summary>
+		/// The correlation ID used to correlate messages with conversations or long running business processes
+		/// </summary>
+		public string NMSCorrelationID
+		{
+			get { return correlationId; }
+			set { correlationId = value; }
+		}
+
+		/// <summary>
+		/// The destination of the message
+		/// </summary>
+		public IDestination NMSDestination
+		{
+			get { return destination; }
+			set { destination = value; }
+		}
+
+		/// <summary>
+		/// The time in milliseconds that this message should expire in
+		/// </summary>
+		public TimeSpan NMSTimeToLive
+		{
+			get { return timeToLive; }
+			set { timeToLive = value; }
+		}
+
+		/// <summary>
+		/// The message ID which is set by the provider
+		/// </summary>
+		public string NMSMessageId
+		{
+			get { return messageId; }
+			set { messageId = value; }
+		}
+
+		/// <summary>
+		/// Whether or not this message is persistent
+		/// </summary>
+		public MsgDeliveryMode NMSDeliveryMode
+		{
+			get { return deliveryMode; }
+			set { deliveryMode = value; }
+		}
+
+		/// <summary>
+		/// The Priority on this message
+		/// </summary>
+		public MsgPriority NMSPriority
+		{
+			get { return priority; }
+			set { priority = value; }
+		}
+
+		/// <summary>
+		/// Returns true if this message has been redelivered to this or another consumer before being acknowledged successfully.
+		/// </summary>
+		public bool NMSRedelivered
+		{
+			get { return false; }
+		}
+
+
+		/// <summary>
+		/// The destination that the consumer of this message should send replies to
+		/// </summary>
+		public IDestination NMSReplyTo
+		{
+			get { return replyTo; }
+			set { replyTo = (Destination) value; }
+		}
+
+
+		/// <summary>
+		/// The timestamp the broker added to the message
+		/// </summary>
+		public DateTime NMSTimestamp
+		{
+			get { return timestamp; }
+		}
+
+		/// <summary>
+		/// The type name of this message
+		/// </summary>
+		public string NMSType
+		{
+			get { return type; }
+			set { type = value; }
+		}
+
+
+		public object GetObjectProperty(string name)
+		{
+			return null;
+		}
+
+		public void SetObjectProperty(string name, object value)
+		{
+		}
+	}
 }
 

@@ -18,8 +18,8 @@
 namespace Apache.NMS.MSMQ
 {
 	public class StreamMessage : BaseMessage
-    {
-		
-    }
+	{
+
+	}
 }
 

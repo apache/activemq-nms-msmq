@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 using System.Messaging;
-using Apache.NMS;
 
 namespace Apache.NMS.MSMQ
 {
-    public interface IMessageConverter
-    {
-		
+	public interface IMessageConverter
+	{
+
 		/// <summary>
 		/// Method ToMSMQMessageQueue
 		/// </summary>
@@ -29,7 +28,7 @@ namespace Apache.NMS.MSMQ
 		/// <returns>A  MessageQueue</returns>
 		MessageQueue ToMsmqDestination(IDestination destination);
 
-        Message ToMsmqMessage(IMessage message);
-        IMessage ToNmsMessage(Message message);
-    }
+		Message ToMsmqMessage(IMessage message);
+		IMessage ToNmsMessage(Message message);
+	}
 }
