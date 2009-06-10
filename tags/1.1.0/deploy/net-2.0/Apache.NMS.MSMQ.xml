@@ -1,0 +1,199 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Apache.NMS.MSMQ</name>
+    </assembly>
+    <members>
+        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSCorrelationID">
+            <summary>
+            The correlation ID used to correlate messages with conversations or long running business processes
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSDestination">
+            <summary>
+            The destination of the message
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSTimeToLive">
+            <summary>
+            The time in milliseconds that this message should expire in
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSMessageId">
+            <summary>
+            The message ID which is set by the provider
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSPersistent">
+            <summary>
+            Whether or not this message is persistent
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSPriority">
+            <summary>
+            The Priority on this message
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSRedelivered">
+            <summary>
+            Returns true if this message has been redelivered to this or another consumer before being acknowledged successfully.
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSReplyTo">
+            <summary>
+            The destination that the consumer of this message should send replies to
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSTimestamp">
+            <summary>
+            The timestamp the broker added to the message
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSType">
+            <summary>
+            The type name of this message
+            </summary>
+        </member>
+        <member name="T:Apache.NMS.MSMQ.Connection">
+             <summary>
+             Represents a NMS connection MSMQ.  Since the underlying MSMQ APIs are actually
+             connectionless, NMS connection in the MSMQ case are not expensive operations.
+             </summary>
+            
+        </member>
+        <member name="M:Apache.NMS.MSMQ.Connection.Start">
+            <summary>
+            Starts message delivery for this connection.
+            </summary>
+        </member>
+        <member name="M:Apache.NMS.MSMQ.Connection.Stop">
+            <summary>
+            Stop message delivery for this connection.
+            </summary>
+        </member>
+        <member name="M:Apache.NMS.MSMQ.Connection.CreateSession">
+            <summary>
+            Creates a new session to work on this connection
+            </summary>
+        </member>
+        <member name="M:Apache.NMS.MSMQ.Connection.CreateSession(Apache.NMS.AcknowledgementMode)">
+            <summary>
+            Creates a new session to work on this connection
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.Connection.IsStarted">
+            <summary>
+            This property determines if the asynchronous message delivery of incoming
+            messages has been started for this connection.
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.Connection.RequestTimeout">
+            <summary>
+            The default timeout for network requests.
+            </summary>
+        </member>
+        <member name="T:Apache.NMS.MSMQ.ConnectionFactory">
+            <summary>
+            A Factory that can estbalish NMS connections to MSMQ
+            </summary>
+        </member>
+        <member name="M:Apache.NMS.MSMQ.ConnectionFactory.CreateConnection">
+            <summary>
+            Creates a new connection to MSMQ.
+            </summary>
+        </member>
+        <member name="M:Apache.NMS.MSMQ.ConnectionFactory.CreateConnection(System.String,System.String)">
+            <summary>
+            Creates a new connection to MSMQ.
+            </summary>
+        </member>
+        <member name="M:Apache.NMS.MSMQ.ConnectionFactory.CreateConnection(System.String,System.String,System.Boolean)">
+            <summary>
+            Creates a new connection to MSMQ.
+            </summary>
+        </member>
+        <member name="M:Apache.NMS.MSMQ.IMessageConverter.ToMsmqDestination(Apache.NMS.IDestination)">
+            <summary>
+            Method ToMSMQMessageQueue
+            </summary>
+            <param name="destination">An IDestination</param>
+            <returns>A  MessageQueue</returns>
+        </member>
+        <member name="T:Apache.NMS.MSMQ.Destination">
+            <summary>
+            Summary description for Destination.
+            </summary>
+        </member>
+        <member name="M:Apache.NMS.MSMQ.Destination.#ctor">
+            The Default Constructor
+        </member>
+        <member name="M:Apache.NMS.MSMQ.Destination.#ctor(System.String)">
+             Construct the Destination with a defined physical name;
+            
+             @param name
+        </member>
+        <member name="M:Apache.NMS.MSMQ.Destination.ToString">
+            @return string representation of this instance
+        </member>
+        <member name="M:Apache.NMS.MSMQ.Destination.GetHashCode">
+            @return hashCode for this instance
+        </member>
+        <member name="M:Apache.NMS.MSMQ.Destination.Equals(System.Object)">
+             if the object passed in is equivalent, return true
+            
+             @param obj the object to compare
+             @return true if this instance and obj are equivalent
+        </member>
+        <member name="M:Apache.NMS.MSMQ.Destination.CreateDestination(System.String)">
+            Factory method to create a child destination if this destination is a composite
+            @param name
+            @return the created Destination
+        </member>
+        <member name="T:Apache.NMS.MSMQ.MessageConsumer">
+            <summary>
+            An object capable of receiving messages from some destination
+            </summary>
+        </member>
+        <member name="T:Apache.NMS.MSMQ.MessageProducer">
+            <summary>
+            An object capable of sending messages to some destination
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.MessageProducer.RequestTimeout">
+            <summary>
+            The default timeout for network requests.
+            </summary>
+        </member>
+        <member name="T:Apache.NMS.MSMQ.PrimitiveMap">
+            <summary>
+            A default implementation of IPrimitiveMap
+            </summary>
+        </member>
+        <member name="M:Apache.NMS.MSMQ.PrimitiveMap.ToString">
+            <summary>
+            Method ToString
+            </summary>
+            <returns>A string</returns>
+        </member>
+        <member name="T:Apache.NMS.MSMQ.Queue">
+            <summary>
+            Summary description for Queue.
+            </summary>
+        </member>
+        <member name="T:Apache.NMS.MSMQ.Session">
+            <summary>
+            MSQM provider of ISession
+            </summary>
+        </member>
+        <member name="M:Apache.NMS.MSMQ.Session.DeleteDestination(Apache.NMS.IDestination)">
+            <summary>
+            Delete a destination (Queue, Topic, Temp Queue, Temp Topic).
+            </summary>
+        </member>
+        <member name="P:Apache.NMS.MSMQ.Session.RequestTimeout">
+            <summary>
+            The default timeout for network requests.
+            </summary>
+        </member>
+    </members>
+</doc>

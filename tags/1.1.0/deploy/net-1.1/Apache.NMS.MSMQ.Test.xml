@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Apache.NMS.MSMQ.Test</name>
+    </assembly>
+    <members>
+        <member name="T:Apache.NMS.MSMQ.MSMQTest">
+            <summary>
+            Use to test and verify MSMQ behaviour.
+            </summary>
+        </member>
+    </members>
+</doc>
