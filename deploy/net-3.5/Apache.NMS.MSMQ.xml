@@ -24,7 +24,7 @@
             The message ID which is set by the provider
             </summary>
         </member>
-        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSPersistent">
+        <member name="P:Apache.NMS.MSMQ.BaseMessage.NMSDeliveryMode">
             <summary>
             Whether or not this message is persistent
             </summary>
