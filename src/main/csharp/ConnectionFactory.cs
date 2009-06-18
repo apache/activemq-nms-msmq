@@ -25,6 +25,7 @@ namespace Apache.NMS.MSMQ
 	{
 		public const string DEFAULT_BROKER_URL = "msmq://localhost";
 		public const string ENV_BROKER_URL = "MSMQ_BROKER_URL";
+		private Uri brokerUri;
 
 		public static string GetDefaultBrokerUrl()
 		{
@@ -58,7 +59,7 @@ namespace Apache.NMS.MSMQ
 
 		public ConnectionFactory(Uri brokerUri, string clientID)
 		{
-
+			this.brokerUri = brokerUri;
 		}
 
 		/// <summary>
@@ -83,6 +84,15 @@ namespace Apache.NMS.MSMQ
 		public IConnection CreateConnection(string userName, string password, bool useLogging)
 		{
 			return new Connection();
+		}
+
+		/// <summary>
+		/// Get/or set the broker Uri.
+		/// </summary>
+		public Uri BrokerUri
+		{
+			get { return brokerUri; }
+			set { brokerUri = value; }
 		}
 	}
 }
