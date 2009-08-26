@@ -39,6 +39,7 @@
   <property name="NUnit.Projectfile" value="Apache.NMS.MSMQ.Test.nunit"/>
 
   <!-- Skip certain frameworks, since MSMQ is not supported on those platforms. -->
+  <property name="build.net-1.1.skip" value="true"/>
   <property name="build.netcf-2.0.skip" value="true"/>
   <property name="build.mono-2.0.skip" value="true"/>
 
