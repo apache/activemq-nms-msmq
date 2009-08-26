@@ -18,47 +18,79 @@ using System;
 using System.IO;
 using System.Messaging;
 using System.Text;
+using Apache.NMS.Util;
 
 namespace Apache.NMS.MSMQ
 {
 	public enum NMSMessageType
 	{
-		BytesMessage,
+		BaseMessage,
 		TextMessage,
-		MapMessage
+		BytesMessage,
+		ObjectMessage,
+		MapMessage,
+		StreamMessage
 	}
 
 	public class DefaultMessageConverter : IMessageConverter
 	{
 		public virtual Message ToMsmqMessage(IMessage message)
 		{
-			Message answer = new Message();
-			ConvertMessageBodyToMSMQ(message, answer);
-			MessageQueue responseQueue = null;
-			if(message.NMSReplyTo != null)
-			{
-				IDestination destination = message.NMSReplyTo;
-				responseQueue = ToMsmqDestination(destination);
-			}
+			Message msmqMessage = new Message();
+			PrimitiveMap metaData = new PrimitiveMap();
+
+			ConvertMessageBodyToMSMQ(message, msmqMessage);
 
 			if(message.NMSTimeToLive != TimeSpan.Zero)
 			{
-				answer.TimeToBeReceived = message.NMSTimeToLive;
+				msmqMessage.TimeToBeReceived = message.NMSTimeToLive;
 			}
 
 			if(message.NMSCorrelationID != null)
 			{
-				answer.CorrelationId = message.NMSCorrelationID;
+				metaData.SetString("NMSCorrelationID", message.NMSCorrelationID);
 			}
 
-			answer.Recoverable = (message.NMSDeliveryMode == MsgDeliveryMode.Persistent);
-			answer.Priority = ToMessagePriority(message.NMSPriority);
-			answer.ResponseQueue = responseQueue;
+			msmqMessage.Recoverable = (message.NMSDeliveryMode == MsgDeliveryMode.Persistent);
+			msmqMessage.Priority = ToMessagePriority(message.NMSPriority);
+			msmqMessage.ResponseQueue = ToMsmqDestination(message.NMSReplyTo);
 			if(message.NMSType != null)
 			{
-				answer.Label = message.NMSType;
+				msmqMessage.Label = message.NMSType;
 			}
-			
+
+			// Store the NMS meta data in the extension area
+			msmqMessage.Extension = metaData.Marshal();
+			return msmqMessage;
+		}
+
+		public virtual IMessage ToNmsMessage(Message message)
+		{
+			BaseMessage answer = CreateNmsMessage(message);
+			// Get the NMS meta data from the extension area
+			PrimitiveMap metaData = PrimitiveMap.Unmarshal(message.Extension);
+
+			try
+			{
+				answer.NMSMessageId = message.Id;
+				answer.NMSCorrelationID = metaData.GetString("NMSCorrelationID");
+				answer.NMSDeliveryMode = (message.Recoverable ? MsgDeliveryMode.Persistent : MsgDeliveryMode.NonPersistent);
+				answer.NMSDestination = ToNmsDestination(message.DestinationQueue);
+			}
+			catch(InvalidOperationException)
+			{
+			}
+
+			try
+			{
+				answer.NMSType = message.Label;
+				answer.NMSReplyTo = ToNmsDestination(message.ResponseQueue);
+				answer.NMSTimeToLive = message.TimeToBeReceived;
+			}
+			catch(InvalidOperationException)
+			{
+			}
+
 			return answer;
 		}
 
@@ -95,27 +127,44 @@ namespace Apache.NMS.MSMQ
 			}
 		}
 
-		protected virtual void ConvertMessageBodyToMSMQ(IMessage message,
-														Message answer)
+		protected virtual void ConvertMessageBodyToMSMQ(IMessage message, Message answer)
 		{
-			if(message is IBytesMessage)
+			if(message is TextMessage)
 			{
-				IBytesMessage bytesMessage = message as IBytesMessage;
-				answer.BodyStream.Write(bytesMessage.Content, 0, bytesMessage.Content.Length);
-				answer.AppSpecific = (int) NMSMessageType.BytesMessage;
-			}
-			else if(message is ITextMessage)
-			{
-				ITextMessage textMessage = message as ITextMessage;
-				byte[] buf = Encoding.UTF8.GetBytes(textMessage.Text);
+				TextMessage textMessage = message as TextMessage;
+				byte[] buf = Encoding.UTF32.GetBytes(textMessage.Text);
 				answer.BodyStream.Write(buf, 0, buf.Length);
 				answer.AppSpecific = (int) NMSMessageType.TextMessage;
 			}
-			else if(message is IMapMessage)
+			else if(message is BytesMessage)
 			{
-				IMapMessage mapMessage = message as IMapMessage;
-				answer.Body = mapMessage.Body;
+				BytesMessage bytesMessage = message as BytesMessage;
+				answer.BodyStream.Write(bytesMessage.Content, 0, bytesMessage.Content.Length);
+				answer.AppSpecific = (int) NMSMessageType.BytesMessage;
+			}
+			else if(message is ObjectMessage)
+			{
+				ObjectMessage objectMessage = message as ObjectMessage;
+				answer.Body = objectMessage.Body;
+				answer.AppSpecific = (int) NMSMessageType.ObjectMessage;
+			}
+			else if(message is MapMessage)
+			{
+				MapMessage mapMessage = message as MapMessage;
+				PrimitiveMap mapBody = mapMessage.Body as PrimitiveMap;
+				byte[] buf = mapBody.Marshal();
+				answer.BodyStream.Write(buf, 0, buf.Length);
 				answer.AppSpecific = (int) NMSMessageType.MapMessage;
+			}
+			else if(message is StreamMessage)
+			{
+				StreamMessage streamMessage = message as StreamMessage;
+				answer.AppSpecific = (int) NMSMessageType.StreamMessage;
+				// TODO: Implement
+			}
+			else if(message is BaseMessage)
+			{
+				answer.AppSpecific = (int) NMSMessageType.BaseMessage;
 			}
 			else
 			{
@@ -127,7 +176,23 @@ namespace Apache.NMS.MSMQ
 		{
 			BaseMessage result = null;
 
-			if((int) NMSMessageType.BytesMessage == message.AppSpecific)
+			if((int) NMSMessageType.TextMessage == message.AppSpecific)
+			{
+				TextMessage textMessage = new TextMessage();
+				string content = String.Empty;
+
+				if(message.BodyStream != null && message.BodyStream.Length > 0)
+				{
+					byte[] buf = null;
+					buf = new byte[message.BodyStream.Length];
+					message.BodyStream.Read(buf, 0, buf.Length);
+					content = Encoding.UTF32.GetString(buf);
+				}
+
+				textMessage.Text = content;
+				result = textMessage;
+			}
+			else if((int) NMSMessageType.BytesMessage == message.AppSpecific)
 			{
 				byte[] buf = null;
 
@@ -141,82 +206,61 @@ namespace Apache.NMS.MSMQ
 				bytesMessage.Content = buf;
 				result = bytesMessage;
 			}
-			else if((int) NMSMessageType.TextMessage == message.AppSpecific)
+			else if((int) NMSMessageType.ObjectMessage == message.AppSpecific)
 			{
-				TextMessage textMessage = new TextMessage();
-				string content = String.Empty;
+				ObjectMessage objectMessage = new ObjectMessage();
 
-				if(message.BodyStream != null && message.BodyStream.Length > 0)
-				{
-					byte[] buf = null;
-					buf = new byte[message.BodyStream.Length];
-					message.BodyStream.Read(buf, 0, buf.Length);
-					content = Encoding.UTF8.GetString(buf);
-				}
-
-				textMessage.Text = content;
-				result = textMessage;
+				objectMessage.Body = message.Body;
+				result = objectMessage;
 			}
 			else if((int) NMSMessageType.MapMessage == message.AppSpecific)
 			{
-				MapMessage mapMessage = new MapMessage();
+				byte[] buf = null;
 
-				mapMessage.Body = message.Body as IPrimitiveMap;
+				if(message.BodyStream != null && message.BodyStream.Length > 0)
+				{
+					buf = new byte[message.BodyStream.Length];
+					message.BodyStream.Read(buf, 0, buf.Length);
+				}
+
+				MapMessage mapMessage = new MapMessage();
+				mapMessage.Body = PrimitiveMap.Unmarshal(buf);
 				result = mapMessage;
+			}
+			else if((int) NMSMessageType.StreamMessage == message.AppSpecific)
+			{
+				StreamMessage streamMessage = new StreamMessage();
+
+				// TODO: Implement
+				result = streamMessage;
 			}
 			else
 			{
-				result = new BaseMessage();
+				BaseMessage baseMessage = new BaseMessage();
+
+				result = baseMessage;
 			}
 
 			return result;
 		}
 
-		public virtual IMessage ToNmsMessage(Message message)
-		{
-			BaseMessage answer = CreateNmsMessage(message);
-			answer.NMSMessageId = message.Id;
-			try
-			{
-				answer.NMSCorrelationID = message.CorrelationId;
-				answer.NMSDeliveryMode = (message.Recoverable ? MsgDeliveryMode.Persistent : MsgDeliveryMode.NonPersistent);
-			}
-			catch(InvalidOperationException)
-			{
-			}
-
-			try
-			{
-				answer.NMSDestination = ToNmsDestination(message.DestinationQueue);
-			}
-			catch(InvalidOperationException)
-			{
-			}
-
-			answer.NMSType = message.Label;
-			answer.NMSReplyTo = ToNmsDestination(message.ResponseQueue);
-			try
-			{
-				answer.NMSTimeToLive = message.TimeToBeReceived;
-			}
-			catch(InvalidOperationException)
-			{
-			}
-			return answer;
-		}
-
-
 		public MessageQueue ToMsmqDestination(IDestination destination)
 		{
+			if(null == destination)
+			{
+				return null;
+			}
+
 			return new MessageQueue((destination as Destination).Path);
 		}
 
 		protected virtual IDestination ToNmsDestination(MessageQueue destinationQueue)
 		{
-			if(destinationQueue == null)
+			if(null == destinationQueue)
 			{
 				return null;
 			}
+
 			return new Queue(destinationQueue.Path);
 		}
 	}

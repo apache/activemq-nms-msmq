@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+using Apache.NMS.Util;
 
 namespace Apache.NMS.MSMQ
 {
