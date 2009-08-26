@@ -17,9 +17,17 @@
 using System;
 using System.IO;
 using System.Messaging;
+using System.Text;
 
 namespace Apache.NMS.MSMQ
 {
+	public enum NMSMessageType
+	{
+		BytesMessage,
+		TextMessage,
+		MapMessage
+	}
+
 	public class DefaultMessageConverter : IMessageConverter
 	{
 		public virtual Message ToMsmqMessage(IMessage message)
@@ -92,13 +100,76 @@ namespace Apache.NMS.MSMQ
 		{
 			if(message is IBytesMessage)
 			{
-				byte[] bytes = (message as IBytesMessage).Content;
-				answer.BodyStream.Write(bytes, 0, bytes.Length);
+				IBytesMessage bytesMessage = message as IBytesMessage;
+				answer.BodyStream.Write(bytesMessage.Content, 0, bytesMessage.Content.Length);
+				answer.AppSpecific = (int) NMSMessageType.BytesMessage;
+			}
+			else if(message is ITextMessage)
+			{
+				ITextMessage textMessage = message as ITextMessage;
+				byte[] buf = Encoding.UTF8.GetBytes(textMessage.Text);
+				answer.BodyStream.Write(buf, 0, buf.Length);
+				answer.AppSpecific = (int) NMSMessageType.TextMessage;
+			}
+			else if(message is IMapMessage)
+			{
+				IMapMessage mapMessage = message as IMapMessage;
+				answer.Body = mapMessage.Body;
+				answer.AppSpecific = (int) NMSMessageType.MapMessage;
 			}
 			else
 			{
 				throw new Exception("unhandled message type");
 			}
+		}
+
+		protected virtual BaseMessage CreateNmsMessage(Message message)
+		{
+			BaseMessage result = null;
+
+			if((int) NMSMessageType.BytesMessage == message.AppSpecific)
+			{
+				byte[] buf = null;
+
+				if(message.BodyStream != null && message.BodyStream.Length > 0)
+				{
+					buf = new byte[message.BodyStream.Length];
+					message.BodyStream.Read(buf, 0, buf.Length);
+				}
+
+				BytesMessage bytesMessage = new BytesMessage();
+				bytesMessage.Content = buf;
+				result = bytesMessage;
+			}
+			else if((int) NMSMessageType.TextMessage == message.AppSpecific)
+			{
+				TextMessage textMessage = new TextMessage();
+				string content = String.Empty;
+
+				if(message.BodyStream != null && message.BodyStream.Length > 0)
+				{
+					byte[] buf = null;
+					buf = new byte[message.BodyStream.Length];
+					message.BodyStream.Read(buf, 0, buf.Length);
+					content = Encoding.UTF8.GetString(buf);
+				}
+
+				textMessage.Text = content;
+				result = textMessage;
+			}
+			else if((int) NMSMessageType.MapMessage == message.AppSpecific)
+			{
+				MapMessage mapMessage = new MapMessage();
+
+				mapMessage.Body = message.Body as IPrimitiveMap;
+				result = mapMessage;
+			}
+			else
+			{
+				result = new BaseMessage();
+			}
+
+			return result;
 		}
 
 		public virtual IMessage ToNmsMessage(Message message)
@@ -108,6 +179,7 @@ namespace Apache.NMS.MSMQ
 			try
 			{
 				answer.NMSCorrelationID = message.CorrelationId;
+				answer.NMSDeliveryMode = (message.Recoverable ? MsgDeliveryMode.Persistent : MsgDeliveryMode.NonPersistent);
 			}
 			catch(InvalidOperationException)
 			{
@@ -146,21 +218,6 @@ namespace Apache.NMS.MSMQ
 				return null;
 			}
 			return new Queue(destinationQueue.Path);
-		}
-
-		protected virtual BaseMessage CreateNmsMessage(Message message)
-		{
-			Stream stream = message.BodyStream;
-			if(stream == null || stream.Length == 0)
-			{
-				return new BaseMessage();
-			}
-			byte[] buf = new byte[stream.Length];
-			stream.Read(buf, 0, buf.Length);
-			// TODO: how to recognise other flavors of message?
-			BytesMessage result = new BytesMessage();
-			result.Content = buf;
-			return result;
 		}
 	}
 }

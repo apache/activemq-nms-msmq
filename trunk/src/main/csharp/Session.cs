@@ -207,8 +207,12 @@ namespace Apache.NMS.MSMQ
 		{
 			get
 			{
-				if(messageQueueTransaction.Status != MessageQueueTransactionStatus.Pending)
+				if(null != messageQueueTransaction
+					&& messageQueueTransaction.Status != MessageQueueTransactionStatus.Pending)
+				{
 					messageQueueTransaction.Begin();
+				}
+
 				return messageQueueTransaction;
 			}
 			set { messageQueueTransaction = value; }
@@ -224,6 +228,5 @@ namespace Apache.NMS.MSMQ
 		{
 			Dispose();
 		}
-
 	}
 }

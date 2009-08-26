@@ -20,11 +20,12 @@ namespace Apache.NMS.MSMQ
 {
 	public class MapMessage : BaseMessage, IMapMessage
 	{
-		private PrimitiveMap body = new PrimitiveMap();
+		private IPrimitiveMap body = new PrimitiveMap();
 
 		public IPrimitiveMap Body
 		{
 			get { return body; }
+			set { body = value; }
 		}
 	}
 }
