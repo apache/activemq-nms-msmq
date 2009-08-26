@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
 
 namespace Apache.NMS.MSMQ
@@ -25,7 +26,6 @@ namespace Apache.NMS.MSMQ
 	///
 	public class Connection : IConnection
 	{
-
 		private AcknowledgementMode acknowledgementMode = AcknowledgementMode.AutoAcknowledge;
 		private IMessageConverter messageConverter = new DefaultMessageConverter();
 
@@ -47,10 +47,7 @@ namespace Apache.NMS.MSMQ
 		/// </summary>
 		public bool IsStarted
 		{
-			get
-			{
-				return true;
-			}
+			get { return true; }
 		}
 
 		/// <summary>
@@ -148,8 +145,6 @@ namespace Apache.NMS.MSMQ
 			{
 				Tracer.Error(e);
 			}
-
 		}
-
 	}
 }

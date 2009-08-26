@@ -36,13 +36,11 @@ namespace Apache.NMS.MSMQ
 		private bool disableMessageTimestamp;
 
 		private MessageQueue messageQueue;
-		private IMessageConverter messageConverter;
 
 		public MessageProducer(Session session, Destination destination)
 		{
 			this.session = session;
 			this.destination = destination;
-			MessageConverter = session.MessageConverter;
 			if(destination != null)
 			{
 				messageQueue = openMessageQueue(destination);
@@ -76,6 +74,7 @@ namespace Apache.NMS.MSMQ
 				{
 					rc.Dispose();
 				}
+
 				throw new NMSException(e.Message + ": " + dest, e);
 			}
 			return rc;
@@ -100,8 +99,7 @@ namespace Apache.NMS.MSMQ
 		{
 			BaseMessage message = (BaseMessage) imessage;
 			MessageQueue mq = null;
-			MessageQueue responseQueue = null;
-			MessageQueueTransaction transaction = null;
+
 			try
 			{
 				// Locate the MSMQ Queue we will be sending to
@@ -121,15 +119,22 @@ namespace Apache.NMS.MSMQ
 					mq = openMessageQueue((Destination) destination);
 				}
 
-				// Convert the Mesasge into a MSMQ message
 				message.NMSDeliveryMode = deliveryMode;
 				message.NMSTimeToLive = timeToLive;
 				message.NMSPriority = priority;
+				if(!DisableMessageTimestamp)
+				{
+					message.NMSTimestamp = DateTime.UtcNow;
+				}
 
-				// message.NMSTimestamp = new DateTime().Date.;
-				Message msg = messageConverter.ToMsmqMessage(message);
-				// TODO: message.NMSMessageId =
-				// Now Send the message
+				if(!DisableMessageID)
+				{
+					// TODO: message.NMSMessageId =
+				}
+
+				// Convert the Mesasge into a MSMQ message
+				Message msg = session.MessageConverter.ToMsmqMessage(message);
+
 				if(mq.Transactional)
 				{
 					if(session.Transacted)
@@ -140,10 +145,12 @@ namespace Apache.NMS.MSMQ
 					else
 					{
 						// Start our own mini transaction here to send the message.
-						transaction = new MessageQueueTransaction();
-						transaction.Begin();
-						mq.Send(msg, transaction);
-						transaction.Commit();
+						using(MessageQueueTransaction transaction = new MessageQueueTransaction())
+						{
+							transaction.Begin();
+							mq.Send(msg, transaction);
+							transaction.Commit();
+						}
 					}
 				}
 				else
@@ -160,17 +167,6 @@ namespace Apache.NMS.MSMQ
 			}
 			finally
 			{
-				// Cleanup
-				if(transaction != null)
-				{
-					transaction.Dispose();
-				}
-
-				if(responseQueue != null)
-				{
-					responseQueue.Dispose();
-				}
-
 				if(mq != null && mq != messageQueue)
 				{
 					mq.Dispose();
@@ -270,12 +266,6 @@ namespace Apache.NMS.MSMQ
 		{
 			get { return disableMessageTimestamp; }
 			set { disableMessageTimestamp = value; }
-		}
-
-		public IMessageConverter MessageConverter
-		{
-			get { return messageConverter; }
-			set { messageConverter = value; }
 		}
 	}
 }

@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 using System;
+using Apache.NMS.Util;
 
 namespace Apache.NMS.MSMQ
 {
@@ -43,11 +45,7 @@ namespace Apache.NMS.MSMQ
 
 		public void Acknowledge()
 		{
-			if(Acknowledger == null)
-			{
-				throw new NMSException("No Acknowledger has been associated with this message: " + this);
-			}
-			else
+			if(null != Acknowledger)
 			{
 				Acknowledger(this);
 			}
@@ -144,6 +142,7 @@ namespace Apache.NMS.MSMQ
 		public DateTime NMSTimestamp
 		{
 			get { return timestamp; }
+			set { timestamp = value; }
 		}
 
 		/// <summary>
