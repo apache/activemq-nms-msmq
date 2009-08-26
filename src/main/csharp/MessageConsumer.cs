@@ -39,6 +39,10 @@ namespace Apache.NMS.MSMQ
 			this.session = session;
 			this.acknowledgementMode = acknowledgementMode;
 			this.messageQueue = messageQueue;
+			if(null != this.messageQueue)
+			{
+				this.messageQueue.MessageReadPropertyFilter.SetAll();
+			}
 		}
 
 		public event MessageListener Listener
@@ -74,13 +78,17 @@ namespace Apache.NMS.MSMQ
 
 		public void Dispose()
 		{
-			throw new NotImplementedException();
+			Close();
 		}
 
 		public void Close()
 		{
 			StopAsyncDelivery();
-			Dispose();
+			if(messageQueue != null)
+			{
+				messageQueue.Dispose();
+				messageQueue = null;
+			}
 		}
 
 		public void StopAsyncDelivery()
