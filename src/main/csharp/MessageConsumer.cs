@@ -35,7 +35,7 @@ namespace Apache.NMS.MSMQ
 		private int listenerCount = 0;
 		private Thread asyncDeliveryThread = null;
 		private AutoResetEvent pause = new AutoResetEvent(false);
-		private AtomicBoolean asyncDelivery = new AtomicBoolean(false);
+		private Atomic<bool> asyncDelivery = new Atomic<bool>(false);
 
 		public MessageConsumer(Session session, AcknowledgementMode acknowledgementMode, MessageQueue messageQueue)
 		{
