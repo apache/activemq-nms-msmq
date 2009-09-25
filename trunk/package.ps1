@@ -16,7 +16,7 @@
 $pkgname = "Apache.NMS.MSMQ"
 $pkgver = "1.2.0"
 $configurations = "release", "debug"
-$frameworks = "net-1.1", "net-2.0", "net-3.5"
+$frameworks = "net-2.0", "net-3.5"
 
 write-progress "Creating package directory." "Initializing..."
 if(!(test-path package))
