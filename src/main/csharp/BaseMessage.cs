@@ -34,14 +34,16 @@ namespace Apache.NMS.MSMQ
 		private Destination replyTo;
 		private string type;
 		private event AcknowledgeHandler Acknowledger;
-		private byte[] content;
 		private DateTime timestamp = new DateTime();
+		private bool readOnlyMsgBody = false;
 
-		public byte[] Content
+		public bool ReadOnlyBody
 		{
-			get { return content; }
-			set { content = value; }
+			get { return readOnlyMsgBody; }
+			set { readOnlyMsgBody = value; }
 		}
+
+		// IMessage interface
 
 		public void Acknowledge()
 		{
@@ -51,6 +53,28 @@ namespace Apache.NMS.MSMQ
 			}
 		}
 
+		/// <summary>
+		/// Clears out the message body. Clearing a message's body does not clear its header
+		/// values or property entries.
+		///
+		/// If this message body was read-only, calling this method leaves the message body in
+		/// the same state as an empty body in a newly created message.
+		/// </summary>
+		public virtual void ClearBody()
+		{
+			this.readOnlyMsgBody = false;
+		}
+
+		/// <summary>
+		/// Clears a message's properties.
+		///
+		/// The message's header fields and body are not cleared.
+		/// </summary>
+		public virtual void ClearProperties()
+		{
+			propertiesMap.Clear();
+		}
+
 		// Properties
 
 		public IPrimitiveMap Properties
@@ -58,8 +82,6 @@ namespace Apache.NMS.MSMQ
 			get { return propertiesMap; }
 		}
 
-
-		// IMessage interface
 
 		// NMS headers
 
@@ -162,6 +184,22 @@ namespace Apache.NMS.MSMQ
 
 		public void SetObjectProperty(string name, object value)
 		{
+		}
+
+		protected void FailIfReadOnlyBody()
+		{
+			if(ReadOnlyBody == true)
+			{
+				throw new MessageNotWriteableException("Message is in Read-Only mode.");
+			}
+		}
+
+		protected void FailIfWriteOnlyBody()
+		{
+			if( ReadOnlyBody == false )
+			{
+				throw new MessageNotReadableException("Message is in Write-Only mode.");
+			}
 		}
 	}
 }
