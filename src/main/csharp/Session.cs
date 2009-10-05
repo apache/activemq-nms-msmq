@@ -88,6 +88,16 @@ namespace Apache.NMS.MSMQ
 			throw new NotSupportedException("Durable Topic subscribers are not supported by MSMQ");
 		}
 
+		public IQueueBrowser CreateBrowser(IQueue queue)
+		{
+			throw new NotImplementedException();
+		}
+
+		public IQueueBrowser CreateBrowser(IQueue queue, string selector)
+		{
+			throw new NotImplementedException();
+		}
+
 		public IQueue GetQueue(string name)
 		{
 			return new Queue(name);
