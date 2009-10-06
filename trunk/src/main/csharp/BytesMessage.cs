@@ -55,16 +55,9 @@ namespace Apache.NMS.MSMQ
 		private EndianBinaryReader dataIn = null;
 		private EndianBinaryWriter dataOut = null;
 		private MemoryStream outputBuffer = null;
-		private byte[] content;
 
 		// Need this later when we add compression to store true content length.
 		private long length = 0;
-
-		public byte[] Content
-		{
-			get { StoreContent(); return content; }
-			set { content = value; }
-		}
 
 		public override void ClearBody()
 		{

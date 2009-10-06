@@ -30,7 +30,6 @@ namespace Apache.NMS.MSMQ
 #if !(PocketPC||NETCF||NETCF_2_0)
 		private IFormatter formatter;
 #endif
-		public byte[] Content;
 
 		public ObjectMessage()
 		{

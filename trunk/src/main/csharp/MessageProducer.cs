@@ -223,6 +223,11 @@ namespace Apache.NMS.MSMQ
 			return session.CreateBytesMessage(body);
 		}
 
+		public IStreamMessage CreateStreamMessage()
+		{
+			return session.CreateStreamMessage();
+		}
+
 		public MsgDeliveryMode DeliveryMode
 		{
 			get { return deliveryMode; }

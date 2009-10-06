@@ -22,7 +22,6 @@ namespace Apache.NMS.MSMQ
 	public class TextMessage : BaseMessage, ITextMessage
 	{
 		public const int SIZE_OF_INT = 4; // sizeof(int) - though causes unsafe issues with net 1.1
-		public byte[] Content;
 
 		private String text;
 

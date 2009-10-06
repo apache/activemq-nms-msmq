@@ -163,6 +163,11 @@ namespace Apache.NMS.MSMQ
 			return answer;
 		}
 
+		public IStreamMessage CreateStreamMessage()
+		{
+			return new StreamMessage();
+		}
+
 		public IObjectMessage CreateObjectMessage(Object body)
 		{
 			ObjectMessage answer = new ObjectMessage();

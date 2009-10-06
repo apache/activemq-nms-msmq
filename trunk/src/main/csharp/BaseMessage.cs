@@ -32,6 +32,7 @@ namespace Apache.NMS.MSMQ
 		private MsgDeliveryMode deliveryMode;
 		private MsgPriority priority;
 		private Destination replyTo;
+		private byte[] content;
 		private string type;
 		private event AcknowledgeHandler Acknowledger;
 		private DateTime timestamp = new DateTime();
@@ -62,6 +63,7 @@ namespace Apache.NMS.MSMQ
 		/// </summary>
 		public virtual void ClearBody()
 		{
+			this.Content = null;
 			this.readOnlyMsgBody = false;
 		}
 
@@ -165,6 +167,12 @@ namespace Apache.NMS.MSMQ
 		{
 			get { return timestamp; }
 			set { timestamp = value; }
+		}
+
+		public byte[] Content
+		{
+			get { return content; }
+			set { this.content = value; }
 		}
 
 		/// <summary>
