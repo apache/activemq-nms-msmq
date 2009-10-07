@@ -29,6 +29,7 @@ namespace Apache.NMS.MSMQ
 		private AcknowledgementMode acknowledgementMode = AcknowledgementMode.AutoAcknowledge;
 		private IMessageConverter messageConverter = new DefaultMessageConverter();
 
+		private ConnectionMetaData metaData = null;
 		private bool connected;
 		private bool closed;
 		private string clientId;
@@ -112,6 +113,11 @@ namespace Apache.NMS.MSMQ
 				}
 				clientId = value;
 			}
+		}
+
+		public IConnectionMetaData MetaData
+		{
+			get { return this.metaData ?? (this.metaData = new ConnectionMetaData()); }
 		}
 
 		public event ExceptionListener ExceptionListener;
