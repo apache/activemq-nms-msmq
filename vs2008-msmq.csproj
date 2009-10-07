@@ -61,6 +61,7 @@
       <HintPath>lib\Apache.NMS\net-2.0\Apache.NMS.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Messaging" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -70,6 +71,7 @@
     <Compile Include="src\main\csharp\CommonAssemblyInfo.cs" />
     <Compile Include="src\main\csharp\Connection.cs" />
     <Compile Include="src\main\csharp\ConnectionFactory.cs" />
+    <Compile Include="src\main\csharp\ConnectionMetaData.cs" />
     <Compile Include="src\main\csharp\DefaultMessageConverter.cs" />
     <Compile Include="src\main\csharp\Destination.cs" />
     <Compile Include="src\main\csharp\IMessageConverter.cs" />
