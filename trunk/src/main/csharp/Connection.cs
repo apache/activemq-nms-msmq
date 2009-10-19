@@ -115,12 +115,30 @@ namespace Apache.NMS.MSMQ
 			}
 		}
 
+		/// <summary>
+		/// Gets the Meta Data for the NMS Connection instance.
+		/// </summary>
 		public IConnectionMetaData MetaData
 		{
 			get { return this.metaData ?? (this.metaData = new ConnectionMetaData()); }
 		}
 
+		/// <summary>
+		/// A delegate that can receive transport level exceptions.
+		/// </summary>
 		public event ExceptionListener ExceptionListener;
+
+		/// <summary>
+		/// An asynchronous listener that is notified when a Fault tolerant connection
+		/// has been interrupted.
+		/// </summary>
+		public event ConnectionInterruptedListener ConnectionInterruptedListener;
+
+		/// <summary>
+		/// An asynchronous listener that is notified when a Fault tolerant connection
+		/// has been resumed.
+		/// </summary>
+		public event ConnectionResumedListener ConnectionResumedListener;
 
 		protected void CheckConnected()
 		{
@@ -143,13 +161,45 @@ namespace Apache.NMS.MSMQ
 
 		public void HandleException(Exception e)
 		{
-			if(ExceptionListener != null)
+			if(ExceptionListener != null && !this.closed)
 			{
 				ExceptionListener(e);
 			}
 			else
 			{
 				Tracer.Error(e);
+			}
+		}
+
+		public void HandleTransportInterrupted()
+		{
+			Tracer.Debug("Transport has been Interrupted.");
+
+			if(this.ConnectionInterruptedListener != null && !this.closed)
+			{
+				try
+				{
+					this.ConnectionInterruptedListener();
+				}
+				catch
+				{
+				}
+			}
+		}
+
+		public void HandleTransportResumed()
+		{
+			Tracer.Debug("Transport has resumed normal operation.");
+
+			if(this.ConnectionResumedListener != null && !this.closed)
+			{
+				try
+				{
+					this.ConnectionResumedListener();
+				}
+				catch
+				{
+				}
 			}
 		}
 	}
