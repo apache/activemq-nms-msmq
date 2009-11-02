@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 using System;
+using Apache.NMS.Policies;
 
 namespace Apache.NMS.MSMQ
 {
@@ -26,6 +27,7 @@ namespace Apache.NMS.MSMQ
 		public const string DEFAULT_BROKER_URL = "msmq://localhost";
 		public const string ENV_BROKER_URL = "MSMQ_BROKER_URL";
 		private Uri brokerUri;
+		private IRedeliveryPolicy redeliveryPolicy = new RedeliveryPolicy();
 
 		public static string GetDefaultBrokerUrl()
 		{
@@ -67,7 +69,7 @@ namespace Apache.NMS.MSMQ
 		/// </summary>
 		public IConnection CreateConnection()
 		{
-			return new Connection();
+			return CreateConnection(string.Empty, string.Empty, false);
 		}
 
 		/// <summary>
@@ -75,7 +77,7 @@ namespace Apache.NMS.MSMQ
 		/// </summary>
 		public IConnection CreateConnection(string userName, string password)
 		{
-			return new Connection();
+			return CreateConnection(userName, password, false);
 		}
 
 		/// <summary>
@@ -83,7 +85,10 @@ namespace Apache.NMS.MSMQ
 		/// </summary>
 		public IConnection CreateConnection(string userName, string password, bool useLogging)
 		{
-			return new Connection();
+			IConnection connection = new Connection();
+
+			connection.RedeliveryPolicy = this.redeliveryPolicy.Clone() as IRedeliveryPolicy;
+			return connection;
 		}
 
 		/// <summary>
@@ -93,6 +98,22 @@ namespace Apache.NMS.MSMQ
 		{
 			get { return brokerUri; }
 			set { brokerUri = value; }
+		}
+
+		/// <summary>
+		/// Get/or set the redelivery policy that new IConnection objects are
+		/// assigned upon creation.
+		/// </summary>
+		public IRedeliveryPolicy RedeliveryPolicy
+		{
+			get { return this.redeliveryPolicy; }
+			set
+			{
+				if(value != null)
+				{
+					this.redeliveryPolicy = value;
+				}
+			}
 		}
 	}
 }

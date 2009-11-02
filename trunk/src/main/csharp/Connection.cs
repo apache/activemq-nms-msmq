@@ -29,6 +29,7 @@ namespace Apache.NMS.MSMQ
 		private AcknowledgementMode acknowledgementMode = AcknowledgementMode.AutoAcknowledge;
 		private IMessageConverter messageConverter = new DefaultMessageConverter();
 
+		private IRedeliveryPolicy redeliveryPolicy;
 		private ConnectionMetaData metaData = null;
 		private bool connected;
 		private bool closed;
@@ -113,6 +114,15 @@ namespace Apache.NMS.MSMQ
 				}
 				clientId = value;
 			}
+		}
+
+		/// <summary>
+		/// Get/or set the redelivery policy for this connection.
+		/// </summary>
+		public IRedeliveryPolicy RedeliveryPolicy
+		{
+			get { return this.redeliveryPolicy; }
+			set { this.redeliveryPolicy = value; }
 		}
 
 		/// <summary>
