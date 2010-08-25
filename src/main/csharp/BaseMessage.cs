@@ -147,6 +147,7 @@ namespace Apache.NMS.MSMQ
 		public bool NMSRedelivered
 		{
 			get { return false; }
+            set { }
 		}
 
 
