@@ -102,9 +102,8 @@ namespace Apache.NMS.MSMQ
             Send(destination, message, DeliveryMode, Priority, TimeToLive);
         }
 
-        public void Send(IDestination destination, IMessage imessage, MsgDeliveryMode deliveryMode, MsgPriority priority, TimeSpan timeToLive)
+        public void Send(IDestination destination, IMessage message, MsgDeliveryMode deliveryMode, MsgPriority priority, TimeSpan timeToLive)
         {
-            BaseMessage message = (BaseMessage) imessage;
             MessageQueue mq = null;
 
             try
