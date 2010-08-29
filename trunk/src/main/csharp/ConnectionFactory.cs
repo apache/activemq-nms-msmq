@@ -19,101 +19,119 @@ using Apache.NMS.Policies;
 
 namespace Apache.NMS.MSMQ
 {
-	/// <summary>
-	/// A Factory that can estbalish NMS connections to MSMQ
-	/// </summary>
-	public class ConnectionFactory : IConnectionFactory
-	{
-		public const string DEFAULT_BROKER_URL = "msmq://localhost";
-		public const string ENV_BROKER_URL = "MSMQ_BROKER_URL";
-		private Uri brokerUri;
-		private IRedeliveryPolicy redeliveryPolicy = new RedeliveryPolicy();
+    /// <summary>
+    /// A Factory that can estbalish NMS connections to MSMQ
+    /// </summary>
+    public class ConnectionFactory : IConnectionFactory
+    {
+        public const string DEFAULT_BROKER_URL = "msmq://localhost";
+        public const string ENV_BROKER_URL = "MSMQ_BROKER_URL";
+        private Uri brokerUri;
+        private IRedeliveryPolicy redeliveryPolicy = new RedeliveryPolicy();
 
-		public static string GetDefaultBrokerUrl()
-		{
-			string answer = Environment.GetEnvironmentVariable(ENV_BROKER_URL);
-			if(answer == null)
-			{
-				answer = DEFAULT_BROKER_URL;
-			}
-			return answer;
-		}
+        public static string GetDefaultBrokerUrl()
+        {
+            string answer = Environment.GetEnvironmentVariable(ENV_BROKER_URL);
+            if(answer == null)
+            {
+                answer = DEFAULT_BROKER_URL;
+            }
+            return answer;
+        }
 
-		public ConnectionFactory()
-			: this(GetDefaultBrokerUrl())
-		{
-		}
+        public ConnectionFactory()
+            : this(GetDefaultBrokerUrl())
+        {
+        }
 
-		public ConnectionFactory(string brokerUri)
-			: this(brokerUri, null)
-		{
-		}
+        public ConnectionFactory(string brokerUri)
+            : this(brokerUri, null)
+        {
+        }
 
-		public ConnectionFactory(string brokerUri, string clientID)
-			: this(new Uri(brokerUri), clientID)
-		{
-		}
+        public ConnectionFactory(string brokerUri, string clientID)
+            : this(new Uri(brokerUri), clientID)
+        {
+        }
 
-		public ConnectionFactory(Uri brokerUri)
-			: this(brokerUri, null)
-		{
-		}
+        public ConnectionFactory(Uri brokerUri)
+            : this(brokerUri, null)
+        {
+        }
 
-		public ConnectionFactory(Uri brokerUri, string clientID)
-		{
-			this.brokerUri = brokerUri;
-		}
+        public ConnectionFactory(Uri brokerUri, string clientID)
+        {
+            this.brokerUri = brokerUri;
+        }
 
-		/// <summary>
-		/// Creates a new connection to MSMQ.
-		/// </summary>
-		public IConnection CreateConnection()
-		{
-			return CreateConnection(string.Empty, string.Empty, false);
-		}
+        /// <summary>
+        /// Creates a new connection to MSMQ.
+        /// </summary>
+        public IConnection CreateConnection()
+        {
+            return CreateConnection(string.Empty, string.Empty, false);
+        }
 
-		/// <summary>
-		/// Creates a new connection to MSMQ.
-		/// </summary>
-		public IConnection CreateConnection(string userName, string password)
-		{
-			return CreateConnection(userName, password, false);
-		}
+        /// <summary>
+        /// Creates a new connection to MSMQ.
+        /// </summary>
+        public IConnection CreateConnection(string userName, string password)
+        {
+            return CreateConnection(userName, password, false);
+        }
 
-		/// <summary>
-		/// Creates a new connection to MSMQ.
-		/// </summary>
-		public IConnection CreateConnection(string userName, string password, bool useLogging)
-		{
-			IConnection connection = new Connection();
+        /// <summary>
+        /// Creates a new connection to MSMQ.
+        /// </summary>
+        public IConnection CreateConnection(string userName, string password, bool useLogging)
+        {
+            IConnection connection = new Connection();
 
-			connection.RedeliveryPolicy = this.redeliveryPolicy.Clone() as IRedeliveryPolicy;
-			return connection;
-		}
+            connection.RedeliveryPolicy = this.redeliveryPolicy.Clone() as IRedeliveryPolicy;
+            connection.ConsumerTransformer = this.consumerTransformer;
+            connection.ProducerTransformer = this.producerTransformer;
 
-		/// <summary>
-		/// Get/or set the broker Uri.
-		/// </summary>
-		public Uri BrokerUri
-		{
-			get { return brokerUri; }
-			set { brokerUri = value; }
-		}
+            return connection;
+        }
 
-		/// <summary>
-		/// Get/or set the redelivery policy that new IConnection objects are
-		/// assigned upon creation.
-		/// </summary>
-		public IRedeliveryPolicy RedeliveryPolicy
-		{
-			get { return this.redeliveryPolicy; }
-			set
-			{
-				if(value != null)
-				{
-					this.redeliveryPolicy = value;
-				}
-			}
-		}
-	}
+        /// <summary>
+        /// Get/or set the broker Uri.
+        /// </summary>
+        public Uri BrokerUri
+        {
+            get { return brokerUri; }
+            set { brokerUri = value; }
+        }
+
+        /// <summary>
+        /// Get/or set the redelivery policy that new IConnection objects are
+        /// assigned upon creation.
+        /// </summary>
+        public IRedeliveryPolicy RedeliveryPolicy
+        {
+            get { return this.redeliveryPolicy; }
+            set
+            {
+                if(value != null)
+                {
+                    this.redeliveryPolicy = value;
+                }
+            }
+        }
+
+        private ConsumerTransformerDelegate consumerTransformer;
+        public ConsumerTransformerDelegate ConsumerTransformer
+        {
+            get { return this.consumerTransformer; }
+            set { this.consumerTransformer = value; }
+        }
+
+        private ProducerTransformerDelegate producerTransformer;
+        public ProducerTransformerDelegate ProducerTransformer
+        {
+            get { return this.producerTransformer; }
+            set { this.producerTransformer = value; }
+        }
+
+    }
 }

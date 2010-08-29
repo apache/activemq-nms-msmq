@@ -19,229 +19,243 @@ using System.Messaging;
 
 namespace Apache.NMS.MSMQ
 {
-	/// <summary>
-	/// MSQM provider of ISession
-	/// </summary>
-	public class Session : ISession
-	{
-		private Connection connection;
-		private AcknowledgementMode acknowledgementMode;
-		private MessageQueueTransaction messageQueueTransaction;
-		private IMessageConverter messageConverter;
+    /// <summary>
+    /// MSQM provider of ISession
+    /// </summary>
+    public class Session : ISession
+    {
+        private Connection connection;
+        private AcknowledgementMode acknowledgementMode;
+        private MessageQueueTransaction messageQueueTransaction;
+        private IMessageConverter messageConverter;
 
-		public Session(Connection connection, AcknowledgementMode acknowledgementMode)
-		{
-			this.connection = connection;
-			this.acknowledgementMode = acknowledgementMode;
-			MessageConverter = connection.MessageConverter;
-			if(this.acknowledgementMode == AcknowledgementMode.Transactional)
-			{
-				MessageQueueTransaction = new MessageQueueTransaction();
-			}
-		}
+        public Session(Connection connection, AcknowledgementMode acknowledgementMode)
+        {
+            this.connection = connection;
+            this.acknowledgementMode = acknowledgementMode;
+            MessageConverter = connection.MessageConverter;
+            if(this.acknowledgementMode == AcknowledgementMode.Transactional)
+            {
+                MessageQueueTransaction = new MessageQueueTransaction();
+            }
+        }
 
-		public void Dispose()
-		{
-			if(MessageQueueTransaction != null)
-			{
-				MessageQueueTransaction.Dispose();
-			}
-		}
+        public void Dispose()
+        {
+            if(MessageQueueTransaction != null)
+            {
+                MessageQueueTransaction.Dispose();
+            }
+        }
 
-		public IMessageProducer CreateProducer()
-		{
-			return CreateProducer(null);
-		}
+        public IMessageProducer CreateProducer()
+        {
+            return CreateProducer(null);
+        }
 
-		public IMessageProducer CreateProducer(IDestination destination)
-		{
-			return new MessageProducer(this, (Destination) destination);
-		}
+        public IMessageProducer CreateProducer(IDestination destination)
+        {
+            return new MessageProducer(this, (Destination) destination);
+        }
 
-		public IMessageConsumer CreateConsumer(IDestination destination)
-		{
-			return CreateConsumer(destination, null);
-		}
+        public IMessageConsumer CreateConsumer(IDestination destination)
+        {
+            return CreateConsumer(destination, null);
+        }
 
-		public IMessageConsumer CreateConsumer(IDestination destination, string selector)
-		{
-			return CreateConsumer(destination, selector, false);
-		}
+        public IMessageConsumer CreateConsumer(IDestination destination, string selector)
+        {
+            return CreateConsumer(destination, selector, false);
+        }
 
-		public IMessageConsumer CreateConsumer(IDestination destination, string selector, bool noLocal)
-		{
-			if(selector != null)
-			{
-				throw new NotSupportedException("Selectors are not supported by MSMQ");
-			}
-			MessageQueue queue = MessageConverter.ToMsmqDestination(destination);
-			return new MessageConsumer(this, acknowledgementMode, queue);
-		}
+        public IMessageConsumer CreateConsumer(IDestination destination, string selector, bool noLocal)
+        {
+            if(selector != null)
+            {
+                throw new NotSupportedException("Selectors are not supported by MSMQ");
+            }
+            MessageQueue queue = MessageConverter.ToMsmqDestination(destination);
+            return new MessageConsumer(this, acknowledgementMode, queue);
+        }
 
-		public IMessageConsumer CreateDurableConsumer(ITopic destination, string name, string selector, bool noLocal)
-		{
-			throw new NotSupportedException("Durable Topic subscribers are not supported by MSMQ");
-		}
+        public IMessageConsumer CreateDurableConsumer(ITopic destination, string name, string selector, bool noLocal)
+        {
+            throw new NotSupportedException("Durable Topic subscribers are not supported by MSMQ");
+        }
 
-		public void DeleteDurableConsumer(string name)
-		{
-			throw new NotSupportedException("Durable Topic subscribers are not supported by MSMQ");
-		}
+        public void DeleteDurableConsumer(string name)
+        {
+            throw new NotSupportedException("Durable Topic subscribers are not supported by MSMQ");
+        }
 
-		public IQueueBrowser CreateBrowser(IQueue queue)
-		{
-			throw new NotImplementedException();
-		}
+        public IQueueBrowser CreateBrowser(IQueue queue)
+        {
+            throw new NotImplementedException();
+        }
 
-		public IQueueBrowser CreateBrowser(IQueue queue, string selector)
-		{
-			throw new NotImplementedException();
-		}
+        public IQueueBrowser CreateBrowser(IQueue queue, string selector)
+        {
+            throw new NotImplementedException();
+        }
 
-		public IQueue GetQueue(string name)
-		{
-			return new Queue(name);
-		}
+        public IQueue GetQueue(string name)
+        {
+            return new Queue(name);
+        }
 
-		public ITopic GetTopic(string name)
-		{
-			throw new NotSupportedException("Topics are not supported by MSMQ");
-		}
+        public ITopic GetTopic(string name)
+        {
+            throw new NotSupportedException("Topics are not supported by MSMQ");
+        }
 
-		public ITemporaryQueue CreateTemporaryQueue()
-		{
-			throw new NotSupportedException("Tempoary Queues are not supported by MSMQ");
-		}
+        public ITemporaryQueue CreateTemporaryQueue()
+        {
+            throw new NotSupportedException("Tempoary Queues are not supported by MSMQ");
+        }
 
-		public ITemporaryTopic CreateTemporaryTopic()
-		{
-			throw new NotSupportedException("Tempoary Topics are not supported by MSMQ");
-		}
+        public ITemporaryTopic CreateTemporaryTopic()
+        {
+            throw new NotSupportedException("Tempoary Topics are not supported by MSMQ");
+        }
 
-		/// <summary>
-		/// Delete a destination (Queue, Topic, Temp Queue, Temp Topic).
-		/// </summary>
-		public void DeleteDestination(IDestination destination)
-		{
-			// TODO: Implement if possible.  If not possible, then change exception to NotSupportedException().
-			throw new NotImplementedException();
-		}
+        /// <summary>
+        /// Delete a destination (Queue, Topic, Temp Queue, Temp Topic).
+        /// </summary>
+        public void DeleteDestination(IDestination destination)
+        {
+            // TODO: Implement if possible.  If not possible, then change exception to NotSupportedException().
+            throw new NotImplementedException();
+        }
 
-		public IMessage CreateMessage()
-		{
-			BaseMessage answer = new BaseMessage();
-			return answer;
-		}
+        public IMessage CreateMessage()
+        {
+            BaseMessage answer = new BaseMessage();
+            return answer;
+        }
 
 
-		public ITextMessage CreateTextMessage()
-		{
-			TextMessage answer = new TextMessage();
-			return answer;
-		}
+        public ITextMessage CreateTextMessage()
+        {
+            TextMessage answer = new TextMessage();
+            return answer;
+        }
 
-		public ITextMessage CreateTextMessage(string text)
-		{
-			TextMessage answer = new TextMessage(text);
-			return answer;
-		}
+        public ITextMessage CreateTextMessage(string text)
+        {
+            TextMessage answer = new TextMessage(text);
+            return answer;
+        }
 
-		public IMapMessage CreateMapMessage()
-		{
-			return new MapMessage();
-		}
+        public IMapMessage CreateMapMessage()
+        {
+            return new MapMessage();
+        }
 
-		public IBytesMessage CreateBytesMessage()
-		{
-			return new BytesMessage();
-		}
+        public IBytesMessage CreateBytesMessage()
+        {
+            return new BytesMessage();
+        }
 
-		public IBytesMessage CreateBytesMessage(byte[] body)
-		{
-			BytesMessage answer = new BytesMessage();
-			answer.Content = body;
-			return answer;
-		}
+        public IBytesMessage CreateBytesMessage(byte[] body)
+        {
+            BytesMessage answer = new BytesMessage();
+            answer.Content = body;
+            return answer;
+        }
 
-		public IStreamMessage CreateStreamMessage()
-		{
-			return new StreamMessage();
-		}
+        public IStreamMessage CreateStreamMessage()
+        {
+            return new StreamMessage();
+        }
 
-		public IObjectMessage CreateObjectMessage(Object body)
-		{
-			ObjectMessage answer = new ObjectMessage();
-			answer.Body = body;
-			return answer;
-		}
+        public IObjectMessage CreateObjectMessage(Object body)
+        {
+            ObjectMessage answer = new ObjectMessage();
+            answer.Body = body;
+            return answer;
+        }
 
-		public void Commit()
-		{
-			if(!Transacted)
-			{
-				throw new InvalidOperationException("You cannot perform a Commit() on a non-transacted session. Acknowlegement mode is: " + acknowledgementMode);
-			}
-			messageQueueTransaction.Commit();
-		}
+        public void Commit()
+        {
+            if(!Transacted)
+            {
+                throw new InvalidOperationException("You cannot perform a Commit() on a non-transacted session. Acknowlegement mode is: " + acknowledgementMode);
+            }
+            messageQueueTransaction.Commit();
+        }
 
-		public void Rollback()
-		{
-			if(!Transacted)
-			{
-				throw new InvalidOperationException("You cannot perform a Commit() on a non-transacted session. Acknowlegement mode is: " + acknowledgementMode);
-			}
-			messageQueueTransaction.Abort();
-		}
+        public void Rollback()
+        {
+            if(!Transacted)
+            {
+                throw new InvalidOperationException("You cannot perform a Commit() on a non-transacted session. Acknowlegement mode is: " + acknowledgementMode);
+            }
+            messageQueueTransaction.Abort();
+        }
 
-		// Properties
-		public Connection Connection
-		{
-			get { return connection; }
-		}
+        // Properties
+        public Connection Connection
+        {
+            get { return connection; }
+        }
 
-		/// <summary>
-		/// The default timeout for network requests.
-		/// </summary>
-		public TimeSpan RequestTimeout
-		{
-			get { return NMSConstants.defaultRequestTimeout; }
-			set { }
-		}
+        /// <summary>
+        /// The default timeout for network requests.
+        /// </summary>
+        public TimeSpan RequestTimeout
+        {
+            get { return NMSConstants.defaultRequestTimeout; }
+            set { }
+        }
 
-		public bool Transacted
-		{
-			get { return acknowledgementMode == AcknowledgementMode.Transactional; }
-		}
+        public bool Transacted
+        {
+            get { return acknowledgementMode == AcknowledgementMode.Transactional; }
+        }
 
-		public AcknowledgementMode AcknowledgementMode
-		{
-			get { throw new NotImplementedException(); }
-		}
+        public AcknowledgementMode AcknowledgementMode
+        {
+            get { throw new NotImplementedException(); }
+        }
 
-		public MessageQueueTransaction MessageQueueTransaction
-		{
-			get
-			{
-				if(null != messageQueueTransaction
-					&& messageQueueTransaction.Status != MessageQueueTransactionStatus.Pending)
-				{
-					messageQueueTransaction.Begin();
-				}
+        public MessageQueueTransaction MessageQueueTransaction
+        {
+            get
+            {
+                if(null != messageQueueTransaction
+                    && messageQueueTransaction.Status != MessageQueueTransactionStatus.Pending)
+                {
+                    messageQueueTransaction.Begin();
+                }
 
-				return messageQueueTransaction;
-			}
-			set { messageQueueTransaction = value; }
-		}
+                return messageQueueTransaction;
+            }
+            set { messageQueueTransaction = value; }
+        }
 
-		public IMessageConverter MessageConverter
-		{
-			get { return messageConverter; }
-			set { messageConverter = value; }
-		}
+        public IMessageConverter MessageConverter
+        {
+            get { return messageConverter; }
+            set { messageConverter = value; }
+        }
 
-		public void Close()
-		{
-			Dispose();
-		}
-	}
+        private ConsumerTransformerDelegate consumerTransformer;
+        public ConsumerTransformerDelegate ConsumerTransformer
+        {
+            get { return this.consumerTransformer; }
+            set { this.consumerTransformer = value; }
+        }
+
+        private ProducerTransformerDelegate producerTransformer;
+        public ProducerTransformerDelegate ProducerTransformer
+        {
+            get { return this.producerTransformer; }
+            set { this.producerTransformer = value; }
+        }
+
+        public void Close()
+        {
+            Dispose();
+        }
+    }
 }
