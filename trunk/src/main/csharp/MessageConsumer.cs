@@ -237,7 +237,7 @@ namespace Apache.NMS.MSMQ
 
             if(this.ConsumerTransformer != null)
             {
-                IMessage newMessage = ConsumerTransformer(this.session, this, message);
+                IMessage newMessage = ConsumerTransformer(this.session, this, converted);
                 if(newMessage != null)
                 {
                     converted = newMessage;
