@@ -19,258 +19,274 @@ using System.Messaging;
 
 namespace Apache.NMS.MSMQ
 {
-	/// <summary>
-	/// An object capable of sending messages to some destination
-	/// </summary>
-	public class MessageProducer : IMessageProducer
-	{
+    /// <summary>
+    /// An object capable of sending messages to some destination
+    /// </summary>
+    public class MessageProducer : IMessageProducer
+    {
 
-		private readonly Session session;
-		private Destination destination;
+        private readonly Session session;
+        private Destination destination;
 
-		//private long messageCounter;
-		private MsgDeliveryMode deliveryMode;
-		private TimeSpan timeToLive;
-		private MsgPriority priority;
-		private bool disableMessageID;
-		private bool disableMessageTimestamp;
+        //private long messageCounter;
+        private MsgDeliveryMode deliveryMode;
+        private TimeSpan timeToLive;
+        private MsgPriority priority;
+        private bool disableMessageID;
+        private bool disableMessageTimestamp;
 
-		private MessageQueue messageQueue;
+        private MessageQueue messageQueue;
 
-		public MessageProducer(Session session, Destination destination)
-		{
-			this.session = session;
-			this.destination = destination;
-			if(destination != null)
-			{
-				messageQueue = openMessageQueue(destination);
-			}
-		}
+        private ProducerTransformerDelegate producerTransformer;
+        public ProducerTransformerDelegate ProducerTransformer
+        {
+            get { return this.producerTransformer; }
+            set { this.producerTransformer = value; }
+        }
 
-		private MessageQueue openMessageQueue(Destination dest)
-		{
-			MessageQueue rc = null;
-			try
-			{
-				if(!MessageQueue.Exists(dest.Path))
-				{
-					// create the new message queue and make it transactional
-					rc = MessageQueue.Create(dest.Path, session.Transacted);
-					this.destination.Path = rc.Path;
-				}
-				else
-				{
-					rc = new MessageQueue(dest.Path);
-					this.destination.Path = rc.Path;
-					if(!rc.CanWrite)
-					{
-						throw new NMSSecurityException("Do not have write access to: " + dest);
-					}
-				}
-			}
-			catch(Exception e)
-			{
-				if(rc != null)
-				{
-					rc.Dispose();
-				}
+        public MessageProducer(Session session, Destination destination)
+        {
+            this.session = session;
+            this.destination = destination;
+            if(destination != null)
+            {
+                messageQueue = openMessageQueue(destination);
+            }
+        }
 
-				throw new NMSException(e.Message + ": " + dest, e);
-			}
-			return rc;
-		}
+        private MessageQueue openMessageQueue(Destination dest)
+        {
+            MessageQueue rc = null;
+            try
+            {
+                if(!MessageQueue.Exists(dest.Path))
+                {
+                    // create the new message queue and make it transactional
+                    rc = MessageQueue.Create(dest.Path, session.Transacted);
+                    this.destination.Path = rc.Path;
+                }
+                else
+                {
+                    rc = new MessageQueue(dest.Path);
+                    this.destination.Path = rc.Path;
+                    if(!rc.CanWrite)
+                    {
+                        throw new NMSSecurityException("Do not have write access to: " + dest);
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                if(rc != null)
+                {
+                    rc.Dispose();
+                }
 
-		public void Send(IMessage message)
-		{
-			Send(Destination, message);
-		}
+                throw new NMSException(e.Message + ": " + dest, e);
+            }
+            return rc;
+        }
 
-		public void Send(IMessage message, MsgDeliveryMode deliveryMode, MsgPriority priority, TimeSpan timeToLive)
-		{
-			Send(Destination, message, deliveryMode, priority, timeToLive);
-		}
+        public void Send(IMessage message)
+        {
+            Send(Destination, message);
+        }
 
-		public void Send(IDestination destination, IMessage message)
-		{
-			Send(destination, message, DeliveryMode, Priority, TimeToLive);
-		}
+        public void Send(IMessage message, MsgDeliveryMode deliveryMode, MsgPriority priority, TimeSpan timeToLive)
+        {
+            Send(Destination, message, deliveryMode, priority, timeToLive);
+        }
 
-		public void Send(IDestination destination, IMessage imessage, MsgDeliveryMode deliveryMode, MsgPriority priority, TimeSpan timeToLive)
-		{
-			BaseMessage message = (BaseMessage) imessage;
-			MessageQueue mq = null;
+        public void Send(IDestination destination, IMessage message)
+        {
+            Send(destination, message, DeliveryMode, Priority, TimeToLive);
+        }
 
-			try
-			{
-				// Locate the MSMQ Queue we will be sending to
-				if(messageQueue != null)
-				{
-					if(destination.Equals(this.destination))
-					{
-						mq = messageQueue;
-					}
-					else
-					{
-						throw new NMSException("This producer can only be used to send to: " + destination);
-					}
-				}
-				else
-				{
-					mq = openMessageQueue((Destination) destination);
-				}
+        public void Send(IDestination destination, IMessage imessage, MsgDeliveryMode deliveryMode, MsgPriority priority, TimeSpan timeToLive)
+        {
+            BaseMessage message = (BaseMessage) imessage;
+            MessageQueue mq = null;
 
-				message.NMSDeliveryMode = deliveryMode;
-				message.NMSTimeToLive = timeToLive;
-				message.NMSPriority = priority;
-				if(!DisableMessageTimestamp)
-				{
-					message.NMSTimestamp = DateTime.UtcNow;
-				}
+            try
+            {
+                // Locate the MSMQ Queue we will be sending to
+                if(messageQueue != null)
+                {
+                    if(destination.Equals(this.destination))
+                    {
+                        mq = messageQueue;
+                    }
+                    else
+                    {
+                        throw new NMSException("This producer can only be used to send to: " + destination);
+                    }
+                }
+                else
+                {
+                    mq = openMessageQueue((Destination) destination);
+                }
 
-				if(!DisableMessageID)
-				{
-					// TODO: message.NMSMessageId =
-				}
+                if(this.ProducerTransformer != null)
+                {
+                    IMessage transformed = this.ProducerTransformer(this.session, this, message);
+                    if(transformed != null)
+                    {
+                        message = transformed;
+                    }
+                }
 
-				// Convert the Mesasge into a MSMQ message
-				Message msg = session.MessageConverter.ToMsmqMessage(message);
+                message.NMSDeliveryMode = deliveryMode;
+                message.NMSTimeToLive = timeToLive;
+                message.NMSPriority = priority;
+                if(!DisableMessageTimestamp)
+                {
+                    message.NMSTimestamp = DateTime.UtcNow;
+                }
 
-				if(mq.Transactional)
-				{
-					if(session.Transacted)
-					{
-						mq.Send(msg, session.MessageQueueTransaction);
+                if(!DisableMessageID)
+                {
+                    // TODO: message.NMSMessageId =
+                }
 
-					}
-					else
-					{
-						// Start our own mini transaction here to send the message.
-						using(MessageQueueTransaction transaction = new MessageQueueTransaction())
-						{
-							transaction.Begin();
-							mq.Send(msg, transaction);
-							transaction.Commit();
-						}
-					}
-				}
-				else
-				{
-					if(session.Transacted)
-					{
-						// We may want to raise an exception here since app requested
-						// a transeced NMS session, but is using a non transacted message queue
-						// For now silently ignore it.
-					}
-					mq.Send(msg);
-				}
+                // Convert the Mesasge into a MSMQ message
+                Message msg = session.MessageConverter.ToMsmqMessage(message);
 
-			}
-			finally
-			{
-				if(mq != null && mq != messageQueue)
-				{
-					mq.Dispose();
-				}
-			}
-		}
+                if(mq.Transactional)
+                {
+                    if(session.Transacted)
+                    {
+                        mq.Send(msg, session.MessageQueueTransaction);
 
-		public void Close()
-		{
-			if(messageQueue != null)
-			{
-				messageQueue.Dispose();
-				messageQueue = null;
-			}
-		}
+                    }
+                    else
+                    {
+                        // Start our own mini transaction here to send the message.
+                        using(MessageQueueTransaction transaction = new MessageQueueTransaction())
+                        {
+                            transaction.Begin();
+                            mq.Send(msg, transaction);
+                            transaction.Commit();
+                        }
+                    }
+                }
+                else
+                {
+                    if(session.Transacted)
+                    {
+                        // We may want to raise an exception here since app requested
+                        // a transeced NMS session, but is using a non transacted message queue
+                        // For now silently ignore it.
+                    }
+                    mq.Send(msg);
+                }
 
-		public void Dispose()
-		{
-			Close();
-		}
+            }
+            finally
+            {
+                if(mq != null && mq != messageQueue)
+                {
+                    mq.Dispose();
+                }
+            }
+        }
 
-		public IMessage CreateMessage()
-		{
-			return session.CreateMessage();
-		}
+        public void Close()
+        {
+            if(messageQueue != null)
+            {
+                messageQueue.Dispose();
+                messageQueue = null;
+            }
+        }
 
-		public ITextMessage CreateTextMessage()
-		{
-			return session.CreateTextMessage();
-		}
+        public void Dispose()
+        {
+            Close();
+        }
 
-		public ITextMessage CreateTextMessage(String text)
-		{
-			return session.CreateTextMessage(text);
-		}
+        public IMessage CreateMessage()
+        {
+            return session.CreateMessage();
+        }
 
-		public IMapMessage CreateMapMessage()
-		{
-			return session.CreateMapMessage();
-		}
+        public ITextMessage CreateTextMessage()
+        {
+            return session.CreateTextMessage();
+        }
 
-		public IObjectMessage CreateObjectMessage(Object body)
-		{
-			return session.CreateObjectMessage(body);
-		}
+        public ITextMessage CreateTextMessage(String text)
+        {
+            return session.CreateTextMessage(text);
+        }
 
-		public IBytesMessage CreateBytesMessage()
-		{
-			return session.CreateBytesMessage();
-		}
+        public IMapMessage CreateMapMessage()
+        {
+            return session.CreateMapMessage();
+        }
 
-		public IBytesMessage CreateBytesMessage(byte[] body)
-		{
-			return session.CreateBytesMessage(body);
-		}
+        public IObjectMessage CreateObjectMessage(Object body)
+        {
+            return session.CreateObjectMessage(body);
+        }
 
-		public IStreamMessage CreateStreamMessage()
-		{
-			return session.CreateStreamMessage();
-		}
+        public IBytesMessage CreateBytesMessage()
+        {
+            return session.CreateBytesMessage();
+        }
 
-		public MsgDeliveryMode DeliveryMode
-		{
-			get { return deliveryMode; }
-			set { deliveryMode = value; }
-		}
+        public IBytesMessage CreateBytesMessage(byte[] body)
+        {
+            return session.CreateBytesMessage(body);
+        }
 
-		public TimeSpan TimeToLive
-		{
-			get { return timeToLive; }
-			set { timeToLive = value; }
-		}
+        public IStreamMessage CreateStreamMessage()
+        {
+            return session.CreateStreamMessage();
+        }
 
-		/// <summary>
-		/// The default timeout for network requests.
-		/// </summary>
-		public TimeSpan RequestTimeout
-		{
-			get { return NMSConstants.defaultRequestTimeout; }
-			set { }
-		}
+        public MsgDeliveryMode DeliveryMode
+        {
+            get { return deliveryMode; }
+            set { deliveryMode = value; }
+        }
 
-		public IDestination Destination
-		{
-			get { return destination; }
-			set { destination = (Destination) value; }
-		}
+        public TimeSpan TimeToLive
+        {
+            get { return timeToLive; }
+            set { timeToLive = value; }
+        }
 
-		public MsgPriority Priority
-		{
-			get { return priority; }
-			set { priority = value; }
-		}
+        /// <summary>
+        /// The default timeout for network requests.
+        /// </summary>
+        public TimeSpan RequestTimeout
+        {
+            get { return NMSConstants.defaultRequestTimeout; }
+            set { }
+        }
 
-		public bool DisableMessageID
-		{
-			get { return disableMessageID; }
-			set { disableMessageID = value; }
-		}
+        public IDestination Destination
+        {
+            get { return destination; }
+            set { destination = (Destination) value; }
+        }
 
-		public bool DisableMessageTimestamp
-		{
-			get { return disableMessageTimestamp; }
-			set { disableMessageTimestamp = value; }
-		}
-	}
+        public MsgPriority Priority
+        {
+            get { return priority; }
+            set { priority = value; }
+        }
+
+        public bool DisableMessageID
+        {
+            get { return disableMessageID; }
+            set { disableMessageID = value; }
+        }
+
+        public bool DisableMessageTimestamp
+        {
+            get { return disableMessageTimestamp; }
+            set { disableMessageTimestamp = value; }
+        }
+    }
 }

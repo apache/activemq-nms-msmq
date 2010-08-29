@@ -21,211 +21,230 @@ using Apache.NMS.Util;
 
 namespace Apache.NMS.MSMQ
 {
-	/// <summary>
-	/// An object capable of receiving messages from some destination
-	/// </summary>
-	public class MessageConsumer : IMessageConsumer
-	{
-		protected TimeSpan zeroTimeout = new TimeSpan(0);
+    /// <summary>
+    /// An object capable of receiving messages from some destination
+    /// </summary>
+    public class MessageConsumer : IMessageConsumer
+    {
+        protected TimeSpan zeroTimeout = new TimeSpan(0);
 
-		private readonly Session session;
-		private readonly AcknowledgementMode acknowledgementMode;
-		private MessageQueue messageQueue;
-		private event MessageListener listener;
-		private int listenerCount = 0;
-		private Thread asyncDeliveryThread = null;
-		private AutoResetEvent pause = new AutoResetEvent(false);
-		private Atomic<bool> asyncDelivery = new Atomic<bool>(false);
+        private readonly Session session;
+        private readonly AcknowledgementMode acknowledgementMode;
+        private MessageQueue messageQueue;
+        private event MessageListener listener;
+        private int listenerCount = 0;
+        private Thread asyncDeliveryThread = null;
+        private AutoResetEvent pause = new AutoResetEvent(false);
+        private Atomic<bool> asyncDelivery = new Atomic<bool>(false);
 
-		public MessageConsumer(Session session, AcknowledgementMode acknowledgementMode, MessageQueue messageQueue)
-		{
-			this.session = session;
-			this.acknowledgementMode = acknowledgementMode;
-			this.messageQueue = messageQueue;
-			if(null != this.messageQueue)
-			{
-				this.messageQueue.MessageReadPropertyFilter.SetAll();
-			}
-		}
+        private ConsumerTransformerDelegate consumerTransformer;
+        public ConsumerTransformerDelegate ConsumerTransformer
+        {
+            get { return this.consumerTransformer; }
+            set { this.consumerTransformer = value; }
+        }
 
-		public event MessageListener Listener
-		{
-			add
-			{
-				listener += value;
-				listenerCount++;
-				StartAsyncDelivery();
-			}
+        public MessageConsumer(Session session, AcknowledgementMode acknowledgementMode, MessageQueue messageQueue)
+        {
+            this.session = session;
+            this.acknowledgementMode = acknowledgementMode;
+            this.messageQueue = messageQueue;
+            if(null != this.messageQueue)
+            {
+                this.messageQueue.MessageReadPropertyFilter.SetAll();
+            }
+        }
 
-			remove
-			{
-				if(listenerCount > 0)
-				{
-					listener -= value;
-					listenerCount--;
-				}
+        public event MessageListener Listener
+        {
+            add
+            {
+                listener += value;
+                listenerCount++;
+                StartAsyncDelivery();
+            }
 
-				if(0 == listenerCount)
-				{
-					StopAsyncDelivery();
-				}
-			}
-		}
+            remove
+            {
+                if(listenerCount > 0)
+                {
+                    listener -= value;
+                    listenerCount--;
+                }
 
-		public IMessage Receive()
-		{
-			IMessage nmsMessage = null;
+                if(0 == listenerCount)
+                {
+                    StopAsyncDelivery();
+                }
+            }
+        }
 
-			if(messageQueue != null)
-			{
-				Message message;
+        public IMessage Receive()
+        {
+            IMessage nmsMessage = null;
 
-				try
-				{
-					message = messageQueue.Receive(zeroTimeout);
-				}
-				catch
-				{
-					message = null;
-				}
+            if(messageQueue != null)
+            {
+                Message message;
 
-				if(null == message)
-				{
-					ReceiveCompletedEventHandler receiveMsg =
-							delegate(Object source, ReceiveCompletedEventArgs asyncResult) {
-								message = messageQueue.EndReceive(asyncResult.AsyncResult);
-								pause.Set();
-							};
+                try
+                {
+                    message = messageQueue.Receive(zeroTimeout);
+                }
+                catch
+                {
+                    message = null;
+                }
 
-					messageQueue.ReceiveCompleted += receiveMsg;
-					messageQueue.BeginReceive();
-					pause.WaitOne();
-					messageQueue.ReceiveCompleted -= receiveMsg;
-				}
+                if(null == message)
+                {
+                    ReceiveCompletedEventHandler receiveMsg =
+                            delegate(Object source, ReceiveCompletedEventArgs asyncResult) {
+                                message = messageQueue.EndReceive(asyncResult.AsyncResult);
+                                pause.Set();
+                            };
 
-				nmsMessage = ToNmsMessage(message);
-			}
+                    messageQueue.ReceiveCompleted += receiveMsg;
+                    messageQueue.BeginReceive();
+                    pause.WaitOne();
+                    messageQueue.ReceiveCompleted -= receiveMsg;
+                }
 
-			return nmsMessage;
-		}
+                nmsMessage = ToNmsMessage(message);
+            }
 
-		public IMessage Receive(TimeSpan timeout)
-		{
-			IMessage nmsMessage = null;
+            return nmsMessage;
+        }
 
-			if(messageQueue != null)
-			{
-				Message message = messageQueue.Receive(timeout);
-				nmsMessage = ToNmsMessage(message);
-			}
+        public IMessage Receive(TimeSpan timeout)
+        {
+            IMessage nmsMessage = null;
 
-			return nmsMessage;
-		}
+            if(messageQueue != null)
+            {
+                Message message = messageQueue.Receive(timeout);
+                nmsMessage = ToNmsMessage(message);
+            }
 
-		public IMessage ReceiveNoWait()
-		{
-			IMessage nmsMessage = null;
+            return nmsMessage;
+        }
 
-			if(messageQueue != null)
-			{
-				Message message = messageQueue.Receive(zeroTimeout);
-				nmsMessage = ToNmsMessage(message);
-			}
+        public IMessage ReceiveNoWait()
+        {
+            IMessage nmsMessage = null;
 
-			return nmsMessage;
-		}
+            if(messageQueue != null)
+            {
+                Message message = messageQueue.Receive(zeroTimeout);
+                nmsMessage = ToNmsMessage(message);
+            }
 
-		public void Dispose()
-		{
-			Close();
-		}
+            return nmsMessage;
+        }
 
-		public void Close()
-		{
-			StopAsyncDelivery();
-			if(messageQueue != null)
-			{
-				messageQueue.Dispose();
-				messageQueue = null;
-			}
-		}
+        public void Dispose()
+        {
+            Close();
+        }
 
-		protected virtual void StopAsyncDelivery()
-		{
-			if(asyncDelivery.CompareAndSet(true, false))
-			{
-				if(null != asyncDeliveryThread)
-				{
-					Tracer.Info("Stopping async delivery thread.");
-					pause.Set();
-					if(!asyncDeliveryThread.Join(10000))
-					{
-						Tracer.Info("Aborting async delivery thread.");
-						asyncDeliveryThread.Abort();
-					}
+        public void Close()
+        {
+            StopAsyncDelivery();
+            if(messageQueue != null)
+            {
+                messageQueue.Dispose();
+                messageQueue = null;
+            }
+        }
 
-					asyncDeliveryThread = null;
-					Tracer.Info("Async delivery thread stopped.");
-				}
-			}
-		}
+        protected virtual void StopAsyncDelivery()
+        {
+            if(asyncDelivery.CompareAndSet(true, false))
+            {
+                if(null != asyncDeliveryThread)
+                {
+                    Tracer.Info("Stopping async delivery thread.");
+                    pause.Set();
+                    if(!asyncDeliveryThread.Join(10000))
+                    {
+                        Tracer.Info("Aborting async delivery thread.");
+                        asyncDeliveryThread.Abort();
+                    }
 
-		protected virtual void StartAsyncDelivery()
-		{
-			if(asyncDelivery.CompareAndSet(false, true))
-			{
-				asyncDeliveryThread = new Thread(new ThreadStart(DispatchLoop));
-				asyncDeliveryThread.Name = "Message Consumer Dispatch: " + messageQueue.QueueName;
-				asyncDeliveryThread.IsBackground = true;
-				asyncDeliveryThread.Start();
-			}
-		}
+                    asyncDeliveryThread = null;
+                    Tracer.Info("Async delivery thread stopped.");
+                }
+            }
+        }
 
-		protected virtual void DispatchLoop()
-		{
-			Tracer.Info("Starting dispatcher thread consumer: " + this);
-			while(asyncDelivery.Value)
-			{
-				try
-				{
-					IMessage message = Receive();
-					if(asyncDelivery.Value && message != null)
-					{
-						try
-						{
-							listener(message);
-						}
-						catch(Exception e)
-						{
-							HandleAsyncException(e);
-						}
-					}
-				}
-				catch(ThreadAbortException ex)
-				{
-					Tracer.InfoFormat("Thread abort received in thread: {0} : {1}", this, ex.Message);
-					break;
-				}
-				catch(Exception ex)
-				{
-					Tracer.ErrorFormat("Exception while receiving message in thread: {0} : {1}", this, ex.Message);
-				}
-			}
-			Tracer.Info("Stopping dispatcher thread consumer: " + this);
-		}
+        protected virtual void StartAsyncDelivery()
+        {
+            if(asyncDelivery.CompareAndSet(false, true))
+            {
+                asyncDeliveryThread = new Thread(new ThreadStart(DispatchLoop));
+                asyncDeliveryThread.Name = "Message Consumer Dispatch: " + messageQueue.QueueName;
+                asyncDeliveryThread.IsBackground = true;
+                asyncDeliveryThread.Start();
+            }
+        }
 
-		protected virtual void HandleAsyncException(Exception e)
-		{
-			session.Connection.HandleException(e);
-		}
+        protected virtual void DispatchLoop()
+        {
+            Tracer.Info("Starting dispatcher thread consumer: " + this);
+            while(asyncDelivery.Value)
+            {
+                try
+                {
+                    IMessage message = Receive();
+                    if(asyncDelivery.Value && message != null)
+                    {
+                        try
+                        {
+                            listener(message);
+                        }
+                        catch(Exception e)
+                        {
+                            HandleAsyncException(e);
+                        }
+                    }
+                }
+                catch(ThreadAbortException ex)
+                {
+                    Tracer.InfoFormat("Thread abort received in thread: {0} : {1}", this, ex.Message);
+                    break;
+                }
+                catch(Exception ex)
+                {
+                    Tracer.ErrorFormat("Exception while receiving message in thread: {0} : {1}", this, ex.Message);
+                }
+            }
+            Tracer.Info("Stopping dispatcher thread consumer: " + this);
+        }
 
-		protected virtual IMessage ToNmsMessage(Message message)
-		{
-			if(message == null)
-			{
-				return null;
-			}
-			return session.MessageConverter.ToNmsMessage(message);
-		}
-	}
+        protected virtual void HandleAsyncException(Exception e)
+        {
+            session.Connection.HandleException(e);
+        }
+
+        protected virtual IMessage ToNmsMessage(Message message)
+        {
+            if(message == null)
+            {
+                return null;
+            }
+
+            IMessage converted = session.MessageConverter.ToNmsMessage(message);
+
+            if(this.ConsumerTransformer != null)
+            {
+                IMessage newMessage = ConsumerTransformer(this.session, this, message);
+                if(newMessage != null)
+                {
+                    converted = newMessage;
+                }
+            }
+
+            return converted;
+        }
+    }
 }
