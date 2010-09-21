@@ -14,7 +14,7 @@
 # limitations under the License.
 
 $pkgname = "Apache.NMS.MSMQ"
-$pkgver = "1.5-SNAPSHOT"
+$pkgver = "1.4-SNAPSHOT"
 $configurations = "release", "debug"
 $frameworks = "net-2.0", "net-3.5"
 
