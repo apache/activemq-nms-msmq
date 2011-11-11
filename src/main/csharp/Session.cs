@@ -193,6 +193,11 @@ namespace Apache.NMS.MSMQ
             messageQueueTransaction.Abort();
         }
 
+        public void Recover()
+        {
+            throw new NotSupportedException();
+        }
+
         // Properties
         public Connection Connection
         {
