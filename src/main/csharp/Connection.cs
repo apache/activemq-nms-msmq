@@ -183,6 +183,10 @@ namespace Apache.NMS.MSMQ
             Dispose();
         }
 
+        public void PurgeTempDestinations()
+        {
+        }
+
         public void HandleException(Exception e)
         {
             if(ExceptionListener != null && !this.closed)
