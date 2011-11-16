@@ -262,5 +262,14 @@ namespace Apache.NMS.MSMQ
         {
             Dispose();
         }
+
+        #region Transaction State Events
+
+        public event SessionTxEventDelegate TransactionStartedListener;
+        public event SessionTxEventDelegate TransactionCommittedListener;
+        public event SessionTxEventDelegate TransactionRolledBackListener;
+
+        #endregion
+
     }
 }
