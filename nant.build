@@ -39,6 +39,7 @@
     <property name="build.netcf-2.0.skip" value="true" />
     <property name="build.netcf-3.5.skip" value="true" />
     <property name="build.mono-2.0.skip" value="true" />
+    <property name="build.mono-4.0.skip" value="true" />
 
     <target name="vendor-init" description="Initializes Vendor library from local repository.">
         <!--
