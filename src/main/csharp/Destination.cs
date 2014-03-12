@@ -43,6 +43,10 @@ namespace Apache.NMS.MSMQ
 			Path = name;
 		}
 
+        public void Dispose()
+        {
+        }
+
 		public String Path
 		{
 			get { return this.path; }

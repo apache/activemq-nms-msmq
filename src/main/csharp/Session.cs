@@ -265,9 +265,11 @@ namespace Apache.NMS.MSMQ
 
         #region Transaction State Events
 
+        #pragma warning disable 0067
         public event SessionTxEventDelegate TransactionStartedListener;
         public event SessionTxEventDelegate TransactionCommittedListener;
         public event SessionTxEventDelegate TransactionRolledBackListener;
+        #pragma warning restore 0067
 
         #endregion
 
