@@ -80,6 +80,7 @@
     <Compile Include="src\main\csharp\MessageProducer.cs" />
     <Compile Include="src\main\csharp\ObjectMessage.cs" />
     <Compile Include="src\main\csharp\Queue.cs" />
+    <Compile Include="src\main\csharp\QueueBrowser.cs" />
     <Compile Include="src\main\csharp\Session.cs" />
     <Compile Include="src\main\csharp\StreamMessage.cs" />
     <Compile Include="src\main\csharp\TextMessage.cs" />

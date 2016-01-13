@@ -90,12 +90,17 @@ namespace Apache.NMS.MSMQ
 
         public IQueueBrowser CreateBrowser(IQueue queue)
         {
-            throw new NotImplementedException();
+            return CreateBrowser(queue, null);
         }
 
         public IQueueBrowser CreateBrowser(IQueue queue, string selector)
         {
-            throw new NotImplementedException();
+            if(selector != null)
+            {
+                throw new NotSupportedException("Selectors are not supported by MSMQ");
+            }
+            MessageQueue msmqQueue = MessageConverter.ToMsmqDestination(queue);
+            return new QueueBrowser(this, msmqQueue);
         }
 
         public IQueue GetQueue(string name)
@@ -110,12 +115,12 @@ namespace Apache.NMS.MSMQ
 
         public ITemporaryQueue CreateTemporaryQueue()
         {
-            throw new NotSupportedException("Tempoary Queues are not supported by MSMQ");
+            throw new NotSupportedException("Temporary Queues are not supported by MSMQ");
         }
 
         public ITemporaryTopic CreateTemporaryTopic()
         {
-            throw new NotSupportedException("Tempoary Topics are not supported by MSMQ");
+            throw new NotSupportedException("Temporary Topics are not supported by MSMQ");
         }
 
         /// <summary>
@@ -123,8 +128,7 @@ namespace Apache.NMS.MSMQ
         /// </summary>
         public void DeleteDestination(IDestination destination)
         {
-            // TODO: Implement if possible.  If not possible, then change exception to NotSupportedException().
-            throw new NotImplementedException();
+            MessageQueue.Delete(destination.ToString());
         }
 
         public IMessage CreateMessage()
