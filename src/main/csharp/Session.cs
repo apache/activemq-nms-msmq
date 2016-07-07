@@ -70,12 +70,8 @@ namespace Apache.NMS.MSMQ
 
         public IMessageConsumer CreateConsumer(IDestination destination, string selector, bool noLocal)
         {
-            if(selector != null)
-            {
-                throw new NotSupportedException("Selectors are not supported by MSMQ");
-            }
             MessageQueue queue = MessageConverter.ToMsmqDestination(destination);
-            return new MessageConsumer(this, acknowledgementMode, queue);
+            return new MessageConsumer(this, acknowledgementMode, queue, selector);
         }
 
         public IMessageConsumer CreateDurableConsumer(ITopic destination, string name, string selector, bool noLocal)
@@ -95,12 +91,8 @@ namespace Apache.NMS.MSMQ
 
         public IQueueBrowser CreateBrowser(IQueue queue, string selector)
         {
-            if(selector != null)
-            {
-                throw new NotSupportedException("Selectors are not supported by MSMQ");
-            }
             MessageQueue msmqQueue = MessageConverter.ToMsmqDestination(queue);
-            return new QueueBrowser(this, msmqQueue);
+            return new QueueBrowser(this, msmqQueue, selector);
         }
 
         public IQueue GetQueue(string name)

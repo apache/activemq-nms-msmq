@@ -19,6 +19,7 @@ using System.Collections;
 using System.Messaging;
 using Apache.NMS;
 using Apache.NMS.Util;
+using Apache.NMS.MSMQ.Readers;
 
 namespace Apache.NMS.MSMQ
 {
@@ -30,7 +31,17 @@ namespace Apache.NMS.MSMQ
         private readonly Session session;
         private MessageQueue messageQueue;
 
+        private string selector;
+
+        private IMessageReader reader;
+        
 		public QueueBrowser(Session session, MessageQueue messageQueue)
+            : this(session, messageQueue, null)
+		{
+		}
+
+		public QueueBrowser(Session session, MessageQueue messageQueue,
+            string selector)
 		{
             this.session = session;
             this.messageQueue = messageQueue;
@@ -39,6 +50,8 @@ namespace Apache.NMS.MSMQ
                 this.messageQueue.MessageReadPropertyFilter.SetAll();
             }
 
+            reader = MessageReaderUtil.CreateMessageReader(
+                messageQueue, session.MessageConverter, selector);
 		}
 
 		~QueueBrowser()
@@ -95,7 +108,7 @@ namespace Apache.NMS.MSMQ
 
 		public string MessageSelector
 		{
-			get { throw new NotSupportedException(); }
+			get { return selector; }
 		}
 
 		public IQueue Queue
@@ -107,11 +120,14 @@ namespace Apache.NMS.MSMQ
 		{
 			private readonly Session session;
 			private readonly MessageEnumerator innerEnumerator;
+            private readonly IMessageReader reader;
 
-			public Enumerator(Session session, MessageQueue messageQueue)
+			public Enumerator(Session session, MessageQueue messageQueue,
+                IMessageReader reader)
 			{
 				this.session = session;
 				this.innerEnumerator = messageQueue.GetMessageEnumerator2();
+                this.reader = reader;
 			}
 
 			public object Current
@@ -124,7 +140,14 @@ namespace Apache.NMS.MSMQ
 
 			public bool MoveNext()
 			{
-				return this.innerEnumerator.MoveNext();
+                while(this.innerEnumerator.MoveNext())
+                {
+				    if(reader.Matches(this.innerEnumerator.Current))
+                    {
+                        return true;
+                    }
+                }
+                return false;
 			}
 
 			public void Reset()
@@ -135,7 +158,7 @@ namespace Apache.NMS.MSMQ
 
 		public IEnumerator GetEnumerator()
 		{
-			return new Enumerator(this.session, this.messageQueue);
+			return new Enumerator(this.session, this.messageQueue, this.reader);
 		}
 	}
 }

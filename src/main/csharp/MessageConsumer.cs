@@ -1,6 +1,8 @@
 using System;
 using System.Messaging;
 using System.Threading;
+using Apache.NMS.Util;
+using Apache.NMS.MSMQ.Readers;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -17,12 +19,11 @@ using System.Threading;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-using Apache.NMS.Util;
 
 namespace Apache.NMS.MSMQ
 {
     /// <summary>
-    /// An object capable of receiving messages from some destination
+    /// An object capable of receiving messages from some destination.
     /// </summary>
     public class MessageConsumer : IMessageConsumer
     {
@@ -31,8 +32,6 @@ namespace Apache.NMS.MSMQ
         private readonly Session session;
         private readonly AcknowledgementMode acknowledgementMode;
         private MessageQueue messageQueue;
-        private event MessageListener listener;
-        private int listenerCount = 0;
         private Thread asyncDeliveryThread = null;
         private AutoResetEvent pause = new AutoResetEvent(false);
         private Atomic<bool> asyncDelivery = new Atomic<bool>(false);
@@ -44,17 +43,46 @@ namespace Apache.NMS.MSMQ
             set { this.consumerTransformer = value; }
         }
 
-        public MessageConsumer(Session session, AcknowledgementMode acknowledgementMode, MessageQueue messageQueue)
+        private IMessageReader reader;
+
+        /// <summary>
+        /// Constructs a message consumer on the specified queue.
+        /// </summary>
+        /// <param name="session">The messaging session.</param>
+        /// <param name="acknowledgementMode">The message acknowledgement mode.</param>
+        /// <param name="messageQueue">The message queue to consume messages from.</param>
+        public MessageConsumer(Session session,
+            AcknowledgementMode acknowledgementMode, MessageQueue messageQueue)
+            : this(session, acknowledgementMode, messageQueue, null)
+        {
+        }
+
+        /// <summary>
+        /// Constructs a message consumer on the specified queue, using a
+        /// selector for filtering incoming messages.
+        /// </summary>
+        /// <param name="session">The messaging session.</param>
+        /// <param name="acknowledgementMode">The message acknowledgement mode.</param>
+        /// <param name="messageQueue">The message queue to consume messages from.</param>
+        /// <param name="selector">The selection criteria.</param>
+        public MessageConsumer(Session session,
+            AcknowledgementMode acknowledgementMode, MessageQueue messageQueue,
+            string selector)
         {
             this.session = session;
             this.acknowledgementMode = acknowledgementMode;
             this.messageQueue = messageQueue;
-            if(null != this.messageQueue)
+            if(this.messageQueue != null)
             {
                 this.messageQueue.MessageReadPropertyFilter.SetAll();
             }
+
+            reader = MessageReaderUtil.CreateMessageReader(
+                messageQueue, session.MessageConverter, selector);
         }
 
+        private int listenerCount = 0;
+        private event MessageListener listener;
         public event MessageListener Listener
         {
             add
@@ -85,32 +113,8 @@ namespace Apache.NMS.MSMQ
 
             if(messageQueue != null)
             {
-                Message message;
-
-                try
-                {
-                    message = messageQueue.Receive(zeroTimeout);
-                }
-                catch
-                {
-                    message = null;
-                }
-
-                if(null == message)
-                {
-                    ReceiveCompletedEventHandler receiveMsg =
-                            delegate(Object source, ReceiveCompletedEventArgs asyncResult) {
-                                message = messageQueue.EndReceive(asyncResult.AsyncResult);
-                                pause.Set();
-                            };
-
-                    messageQueue.ReceiveCompleted += receiveMsg;
-                    messageQueue.BeginReceive();
-                    pause.WaitOne();
-                    messageQueue.ReceiveCompleted -= receiveMsg;
-                }
-
-                nmsMessage = ToNmsMessage(message);
+                nmsMessage = reader.Receive();
+                nmsMessage = TransformMessage(nmsMessage);
             }
 
             return nmsMessage;
@@ -122,8 +126,8 @@ namespace Apache.NMS.MSMQ
 
             if(messageQueue != null)
             {
-                Message message = messageQueue.Receive(timeout);
-                nmsMessage = ToNmsMessage(message);
+                nmsMessage = reader.Receive(timeout);
+                nmsMessage = TransformMessage(nmsMessage);
             }
 
             return nmsMessage;
@@ -135,8 +139,8 @@ namespace Apache.NMS.MSMQ
 
             if(messageQueue != null)
             {
-                Message message = messageQueue.Receive(zeroTimeout);
-                nmsMessage = ToNmsMessage(message);
+                nmsMessage = reader.Receive(zeroTimeout);
+                nmsMessage = TransformMessage(nmsMessage);
             }
 
             return nmsMessage;
@@ -226,25 +230,20 @@ namespace Apache.NMS.MSMQ
             session.Connection.HandleException(e);
         }
 
-        protected virtual IMessage ToNmsMessage(Message message)
+        protected virtual IMessage TransformMessage(IMessage message)
         {
-            if(message == null)
-            {
-                return null;
-            }
+            IMessage transformed = message;
 
-            IMessage converted = session.MessageConverter.ToNmsMessage(message);
-
-            if(this.ConsumerTransformer != null)
+            if(message != null && this.ConsumerTransformer != null)
             {
-                IMessage newMessage = ConsumerTransformer(this.session, this, converted);
+                IMessage newMessage = ConsumerTransformer(this.session, this, message);
                 if(newMessage != null)
                 {
-                    converted = newMessage;
+                    transformed = newMessage;
                 }
             }
 
-            return converted;
+            return transformed;
         }
     }
 }

@@ -1,4 +1,4 @@
-/*
+ /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,34 +24,36 @@ namespace Apache.NMS.MSMQ
 
 	public class BaseMessage : IMessage
 	{
-		private PrimitiveMap propertiesMap = new PrimitiveMap();
-		private IDestination destination;
-		private string correlationId;
-		private TimeSpan timeToLive;
-		private string messageId;
-		private MsgDeliveryMode deliveryMode;
-		private MsgPriority priority;
-		private Destination replyTo;
-		private byte[] content;
-		private string type;
+		#region Acknowledgement
+
 		private event AcknowledgeHandler Acknowledger;
-		private DateTime timestamp = new DateTime();
-		private bool readOnlyMsgBody = false;
-
-		public bool ReadOnlyBody
-		{
-			get { return readOnlyMsgBody; }
-			set { readOnlyMsgBody = value; }
-		}
-
-		// IMessage interface
-
 		public void Acknowledge()
 		{
 			if(null != Acknowledger)
 			{
 				Acknowledger(this);
 			}
+		}
+
+		#endregion
+
+		#region Message body
+
+		private byte[] content;
+		public byte[] Content
+		{
+			get { return content; }
+			set { this.content = value; }
+		}
+
+		private bool readOnlyMsgBody = false;
+		/// <summary>
+		/// Whether the message body is read-only.
+		/// </summary>
+		public bool ReadOnlyBody
+		{
+			get { return readOnlyMsgBody; }
+			set { readOnlyMsgBody = value; }
 		}
 
 		/// <summary>
@@ -67,53 +69,72 @@ namespace Apache.NMS.MSMQ
 			this.readOnlyMsgBody = false;
 		}
 
+		#endregion
+
+		#region Message properties
+
+		private PrimitiveMap propertiesMap = new PrimitiveMap();
+		private MessagePropertyIntercepter propertyHelper;
+		/// <summary>
+		/// Provides access to the message properties (headers)
+		/// </summary>
+		public Apache.NMS.IPrimitiveMap Properties
+		{
+			get
+			{
+                if(propertyHelper == null)
+                {
+				    propertyHelper = new Apache.NMS.Util.MessagePropertyIntercepter(
+					    this, propertiesMap, this.ReadOnlyProperties);
+				}
+
+                return propertyHelper;
+			}
+		}
+
+		private bool readOnlyMsgProperties = false;
+		/// <summary>
+		/// Whether the message properties is read-only.
+		/// </summary>
+		public virtual bool ReadOnlyProperties
+		{
+			get { return this.readOnlyMsgProperties; }
+
+			set
+			{
+				if(this.propertyHelper != null)
+				{
+					this.propertyHelper.ReadOnly = value;
+				}
+				this.readOnlyMsgProperties = value;
+			}
+		}
+
 		/// <summary>
 		/// Clears a message's properties.
-		///
 		/// The message's header fields and body are not cleared.
 		/// </summary>
-		public virtual void ClearProperties()
+		public void ClearProperties()
 		{
-			propertiesMap.Clear();
+            this.ReadOnlyProperties = false;
+            this.propertiesMap.Clear();
 		}
 
-		// Properties
-
-		public IPrimitiveMap Properties
+		public object GetObjectProperty(string name)
 		{
-			get { return propertiesMap; }
+			return Properties[name];
 		}
 
-
-		// NMS headers
-
-		/// <summary>
-		/// The correlation ID used to correlate messages with conversations or long running business processes
-		/// </summary>
-		public string NMSCorrelationID
+		public void SetObjectProperty(string name, object value)
 		{
-			get { return correlationId; }
-			set { correlationId = value; }
+            Properties[name] = value;
 		}
 
-		/// <summary>
-		/// The destination of the message
-		/// </summary>
-		public IDestination NMSDestination
-		{
-			get { return destination; }
-			set { destination = value; }
-		}
+		#endregion
 
-		/// <summary>
-		/// The time in milliseconds that this message should expire in
-		/// </summary>
-		public TimeSpan NMSTimeToLive
-		{
-			get { return timeToLive; }
-			set { timeToLive = value; }
-		}
+		#region Message header fields
 
+		private string messageId;
 		/// <summary>
 		/// The message ID which is set by the provider
 		/// </summary>
@@ -123,6 +144,37 @@ namespace Apache.NMS.MSMQ
 			set { messageId = value; }
 		}
 
+		private string correlationId;
+		/// <summary>
+		/// The correlation ID used to correlate messages with conversations or long running business processes
+		/// </summary>
+		public string NMSCorrelationID
+		{
+			get { return correlationId; }
+			set { correlationId = value; }
+		}
+
+		private IDestination destination;
+		/// <summary>
+		/// The destination of the message
+		/// </summary>
+		public IDestination NMSDestination
+		{
+			get { return destination; }
+			set { destination = value; }
+		}
+
+		private TimeSpan timeToLive;
+		/// <summary>
+		/// The time in milliseconds that this message should expire in
+		/// </summary>
+		public TimeSpan NMSTimeToLive
+		{
+			get { return timeToLive; }
+			set { timeToLive = value; }
+		}
+
+		private MsgDeliveryMode deliveryMode;
 		/// <summary>
 		/// Whether or not this message is persistent
 		/// </summary>
@@ -132,6 +184,7 @@ namespace Apache.NMS.MSMQ
 			set { deliveryMode = value; }
 		}
 
+		private MsgPriority priority;
 		/// <summary>
 		/// The Priority on this message
 		/// </summary>
@@ -150,7 +203,7 @@ namespace Apache.NMS.MSMQ
             set { }
 		}
 
-
+		private Destination replyTo;
 		/// <summary>
 		/// The destination that the consumer of this message should send replies to
 		/// </summary>
@@ -160,7 +213,7 @@ namespace Apache.NMS.MSMQ
 			set { replyTo = (Destination) value; }
 		}
 
-
+		private DateTime timestamp = new DateTime();
 		/// <summary>
 		/// The timestamp the broker added to the message
 		/// </summary>
@@ -170,12 +223,7 @@ namespace Apache.NMS.MSMQ
 			set { timestamp = value; }
 		}
 
-		public byte[] Content
-		{
-			get { return content; }
-			set { this.content = value; }
-		}
-
+		private string type;
 		/// <summary>
 		/// The type name of this message
 		/// </summary>
@@ -185,15 +233,9 @@ namespace Apache.NMS.MSMQ
 			set { type = value; }
 		}
 
+        #endregion
 
-		public object GetObjectProperty(string name)
-		{
-			return null;
-		}
-
-		public void SetObjectProperty(string name, object value)
-		{
-		}
+        #region Check access mode
 
 		protected void FailIfReadOnlyBody()
 		{
@@ -205,11 +247,13 @@ namespace Apache.NMS.MSMQ
 
 		protected void FailIfWriteOnlyBody()
 		{
-			if( ReadOnlyBody == false )
+			if(ReadOnlyBody == false)
 			{
 				throw new MessageNotReadableException("Message is in Write-Only mode.");
 			}
 		}
+
+        #endregion
 	}
 }
 

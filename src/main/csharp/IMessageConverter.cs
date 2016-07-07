@@ -20,15 +20,27 @@ namespace Apache.NMS.MSMQ
 {
 	public interface IMessageConverter
 	{
-
-		/// <summary>
-		/// Method ToMSMQMessageQueue
-		/// </summary>
-		/// <param name="destination">An IDestination</param>
-		/// <returns>A  MessageQueue</returns>
-		MessageQueue ToMsmqDestination(IDestination destination);
-
+        /// <summary>
+        /// Converts the specified NMS message to an equivalent MSMQ message.
+        /// </summary>
+        /// <param name="message">NMS message to be converted.</param>
+        /// <result>Converted MSMQ message.</result>
 		Message ToMsmqMessage(IMessage message);
+
+        /// <summary>
+        /// Converts the specified MSMQ message to an equivalent NMS message
+        /// (including its message body).
+        /// </summary>
+        /// <param name="message">MSMQ message to be converted.</param>
+        /// <result>Converted NMS message.</result>
 		IMessage ToNmsMessage(Message message);
+
+        /// <summary>
+        /// Converts an NMS destination to the equivalent MSMQ destination
+        /// (ie. queue).
+        /// </summary>
+        /// <param name="destination">NMS destination.</param>
+        /// <result>MSMQ queue.</result>
+		MessageQueue ToMsmqDestination(IDestination destination);
 	}
 }
