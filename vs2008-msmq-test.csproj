@@ -1,9 +1,8 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{2F31ED5C-44A2-464A-BD55-2B5B010654E8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Apache.NMS.MSMQ.Test</RootNamespace>
@@ -79,6 +78,67 @@
     <Compile Include="src\test\csharp\MSMQTest.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="src\test\csharp\AsyncConsumeTest.cs" />
+    <Compile Include="src\test\csharp\BadConsumeTest.cs" />
+    <Compile Include="src\test\csharp\BytesMessageTest.cs" />
+    <Compile Include="src\test\csharp\ConnectionTest.cs" />
+    <Compile Include="src\test\csharp\ConsumerTest.cs" />
+    <Compile Include="src\test\csharp\DurableTest.cs" />
+    <Compile Include="src\test\csharp\EndianBinaryReaderTest.cs" />
+    <Compile Include="src\test\csharp\EndianBinaryWriterTest.cs" />
+    <Compile Include="src\test\csharp\EndianTest.cs" />
+    <Compile Include="src\test\csharp\ForeignMessageTransformationTest.cs" />
+    <Compile Include="src\test\csharp\MapMessageTest.cs" />
+    <Compile Include="src\test\csharp\MessageSelectorTest.cs" />
+    <Compile Include="src\test\csharp\MessageTest.cs" />
+    <Compile Include="src\test\csharp\MessageTransformerTest.cs" />
+    <Compile Include="src\test\csharp\MSMQAsyncConsumeTest.cs" />
+    <Compile Include="src\test\csharp\MSMQBadConsumeTest.cs" />
+    <Compile Include="src\test\csharp\MSMQBytesMessageTest.cs" />
+    <Compile Include="src\test\csharp\MSMQConnectionTest.cs" />
+    <Compile Include="src\test\csharp\MSMQConsumerTest.cs" />
+    <Compile Include="src\test\csharp\MSMQDurableTest.cs" />
+    <Compile Include="src\test\csharp\MSMQForeignMessageTransformationTest.cs" />
+    <Compile Include="src\test\csharp\MSMQMapMessageTest.cs" />
+    <Compile Include="src\test\csharp\MSMQMessageSelectorTest.cs" />
+    <Compile Include="src\test\csharp\MSMQMessageTest.cs" />
+    <Compile Include="src\test\csharp\MSMQMessageTransformerTest.cs" />
+    <Compile Include="src\test\csharp\MSMQNMSPropertyTest.cs" />
+    <Compile Include="src\test\csharp\MSMQProducerTest.cs" />
+    <Compile Include="src\test\csharp\MSMQRequestResponseTest.cs" />
+    <Compile Include="src\test\csharp\MSMQStreamMessageTest.cs" />
+    <Compile Include="src\test\csharp\MSMQTempDestinationDeletionTest.cs" />
+    <Compile Include="src\test\csharp\MSMQTempDestinationTest.cs" />
+    <Compile Include="src\test\csharp\MSMQTestSupport.cs" />
+    <Compile Include="src\test\csharp\MSMQTextMessageTest.cs" />
+    <Compile Include="src\test\csharp\MSMQTransactionTest.cs" />
+    <Compile Include="src\test\csharp\MSMQXmlMessageTest.cs" />
+    <Compile Include="src\test\csharp\NMSPropertyTest.cs" />
+    <Compile Include="src\test\csharp\NMSTest.cs" />
+    <Compile Include="src\test\csharp\NMSTestSupport.cs" />
+    <Compile Include="src\test\csharp\NMSTracer.cs" />
+    <Compile Include="src\test\csharp\PrimitiveMapTest.cs" />
+    <Compile Include="src\test\csharp\ProducerTest.cs" />
+    <Compile Include="src\test\csharp\RedeliveryPolicyTest.cs" />
+    <Compile Include="src\test\csharp\RequestResponseTest.cs" />
+    <Compile Include="src\test\csharp\StreamMessageTest.cs" />
+    <Compile Include="src\test\csharp\TempDestinationDeletionTest.cs" />
+    <Compile Include="src\test\csharp\TempDestinationTest.cs" />
+    <Compile Include="src\test\csharp\TextMessageTest.cs" />
+    <Compile Include="src\test\csharp\TransactionTest.cs" />
+    <Compile Include="src\test\csharp\XmlMessageTest.cs" />
+    <Compile Include="src\test\csharp\Commands\BytesMessage.cs" />
+    <Compile Include="src\test\csharp\Commands\Destination.cs" />
+    <Compile Include="src\test\csharp\Commands\MapMessage.cs" />
+    <Compile Include="src\test\csharp\Commands\Message.cs" />
+    <Compile Include="src\test\csharp\Commands\ObjectMessage.cs" />
+    <Compile Include="src\test\csharp\Commands\Queue.cs" />
+    <Compile Include="src\test\csharp\Commands\StreamMessage.cs" />
+    <Compile Include="src\test\csharp\Commands\TempDestination.cs" />
+    <Compile Include="src\test\csharp\Commands\TempQueue.cs" />
+    <Compile Include="src\test\csharp\Commands\TempTopic.cs" />
+    <Compile Include="src\test\csharp\Commands\TextMessage.cs" />
+    <Compile Include="src\test\csharp\Commands\Topic.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="vs2008-msmq.csproj">
@@ -110,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="keyfile\NMSKey.snk" />
+    <None Include="msmqprovider-test.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
   <PropertyGroup>

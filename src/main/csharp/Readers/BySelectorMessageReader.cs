@@ -166,7 +166,7 @@ namespace Apache.NMS.MSMQ.Readers
 
                     return Convert(message);
                 }
-                catch(InvalidOperationException exc)
+                catch(InvalidOperationException)
                 {
                     // TODO: filter exceptions, catch only exceptions due to                    
                     // unknown lookup id.
@@ -189,39 +189,35 @@ namespace Apache.NMS.MSMQ.Readers
                 timeSpan = TimeSpan.Zero;
             }
 
-            Cursor cursor = messageQueue.CreateCursor();
-
-            PeekAction action = PeekAction.Current;
-
-            while(true)
+            using(Cursor cursor = messageQueue.CreateCursor())
             {
-                Message msmqMessage = null;
+                PeekAction action = PeekAction.Current;
+                while(true)
+                {
+                    Message msmqMessage = null;
 
-                try
-                {
-                    msmqMessage = messageQueue.Peek(timeSpan, cursor, action);
-                }
-                catch(MessageQueueException exc)
-                {
-                    if(exc.MessageQueueErrorCode != MessageQueueErrorCode.IOTimeout)
+                    try
                     {
+                        msmqMessage = messageQueue.Peek(timeSpan, cursor, action);
+                    }
+                    catch(MessageQueueException exc)
+                    {
+                        if(exc.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout)
+                        {
+                            return null;
+                        }
                         throw exc;
                     }
+
+                    IMessage nmsMessage = InternalMatch(msmqMessage, convertBody);
+
+                    if(nmsMessage != null)
+                    {
+                        return nmsMessage;
+                    }
+
+                    action = PeekAction.Next;
                 }
-
-                if(msmqMessage == null)
-                {
-                    return null;
-                }
-
-                IMessage nmsMessage = InternalMatch(msmqMessage, convertBody);
-
-                if(nmsMessage != null)
-                {
-                    return nmsMessage;
-                }
-
-                action = PeekAction.Next;
             }
         }
 

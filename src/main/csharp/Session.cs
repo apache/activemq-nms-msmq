@@ -70,6 +70,12 @@ namespace Apache.NMS.MSMQ
 
         public IMessageConsumer CreateConsumer(IDestination destination, string selector, bool noLocal)
         {
+            // Bad consumer test
+            if(destination == null)
+            {
+                throw new NMSException("Consumer destination cannot be null");
+            }
+
             MessageQueue queue = MessageConverter.ToMsmqDestination(destination);
             return new MessageConsumer(this, acknowledgementMode, queue, selector);
         }
@@ -178,6 +184,9 @@ namespace Apache.NMS.MSMQ
                 throw new InvalidOperationException("You cannot perform a Commit() on a non-transacted session. Acknowlegement mode is: " + acknowledgementMode);
             }
             messageQueueTransaction.Commit();
+
+            // Start a new transaction
+            MessageQueueTransaction = new MessageQueueTransaction();
         }
 
         public void Rollback()
@@ -187,6 +196,9 @@ namespace Apache.NMS.MSMQ
                 throw new InvalidOperationException("You cannot perform a Commit() on a non-transacted session. Acknowlegement mode is: " + acknowledgementMode);
             }
             messageQueueTransaction.Abort();
+
+            // Start a new transaction
+            MessageQueueTransaction = new MessageQueueTransaction();
         }
 
         public void Recover()
@@ -221,17 +233,17 @@ namespace Apache.NMS.MSMQ
 
         public MessageQueueTransaction MessageQueueTransaction
         {
-            get
+            get { return messageQueueTransaction; }
+            set
             {
+                messageQueueTransaction = value;
+
                 if(null != messageQueueTransaction
                     && messageQueueTransaction.Status != MessageQueueTransactionStatus.Pending)
                 {
                     messageQueueTransaction.Begin();
                 }
-
-                return messageQueueTransaction;
             }
-            set { messageQueueTransaction = value; }
         }
 
         public IMessageConverter MessageConverter

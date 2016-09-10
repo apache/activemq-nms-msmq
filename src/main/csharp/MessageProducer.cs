@@ -50,41 +50,47 @@ namespace Apache.NMS.MSMQ
             this.destination = destination;
             if(destination != null)
             {
-                messageQueue = openMessageQueue(destination);
+                messageQueue = OpenMessageQueue(destination);
             }
         }
 
-        private MessageQueue openMessageQueue(Destination dest)
+        private MessageQueue OpenMessageQueue(Destination dest)
         {
-            MessageQueue rc = null;
-            try
+            Queue queue = dest as Queue;
+
+            MessageQueue mq = queue.MSMQMessageQueue;
+
+            if(mq == null)
             {
-                if(!MessageQueue.Exists(dest.Path))
+                try
                 {
-                    // create the new message queue and make it transactional
-                    rc = MessageQueue.Create(dest.Path, session.Transacted);
-                    this.destination.Path = rc.Path;
-                }
-                else
-                {
-                    rc = new MessageQueue(dest.Path);
-                    this.destination.Path = rc.Path;
-                    if(!rc.CanWrite)
+                    if(!Queue.Exists(dest.Path))
                     {
-                        throw new NMSSecurityException("Do not have write access to: " + dest);
+                        // create the new message queue and make it transactional
+                        mq = MessageQueue.Create(dest.Path, session.Transacted);
+                        this.destination = new Queue(mq);
+                    }
+                    else
+                    {
+                        mq = new MessageQueue(dest.Path);
+                        this.destination = new Queue(mq);
+                        if(!mq.CanWrite)
+                        {
+                            throw new NMSSecurityException("Do not have write access to: " + dest);
+                        }
                     }
                 }
-            }
-            catch(Exception e)
-            {
-                if(rc != null)
+                catch(Exception e)
                 {
-                    rc.Dispose();
+                    if(mq != null)
+                    {
+                        mq.Dispose();
+                    }
+                
+                    throw new NMSException(e.Message + ": " + dest, e);
                 }
-
-                throw new NMSException(e.Message + ": " + dest, e);
             }
-            return rc;
+            return mq;
         }
 
         public void Send(IMessage message)
@@ -111,18 +117,28 @@ namespace Apache.NMS.MSMQ
                 // Locate the MSMQ Queue we will be sending to
                 if(messageQueue != null)
                 {
+                    if(destination == null)
+                    {
+                        throw new InvalidDestinationException("This producer can only be used to send to: " + destination);
+                    }
+
                     if(destination.Equals(this.destination))
                     {
                         mq = messageQueue;
                     }
                     else
                     {
-                        throw new NMSException("This producer can only be used to send to: " + destination);
+                        throw new NotSupportedException("This producer can only be used to send to: " + destination);
                     }
                 }
                 else
                 {
-                    mq = openMessageQueue((Destination) destination);
+                    if(destination == null)
+                    {
+                        throw new NotSupportedException();
+                    }
+
+                    mq = OpenMessageQueue((Destination) destination);
                 }
 
                 if(this.ProducerTransformer != null)
@@ -147,7 +163,7 @@ namespace Apache.NMS.MSMQ
                     // TODO: message.NMSMessageId =
                 }
 
-                // Convert the Mesasge into a MSMQ message
+                // Convert the Message into a MSMQ message
                 Message msg = session.MessageConverter.ToMsmqMessage(message);
 
                 if(mq.Transactional)
@@ -179,6 +195,11 @@ namespace Apache.NMS.MSMQ
                     mq.Send(msg);
                 }
 
+                message.NMSMessageId = msg.Id;
+                if(message.NMSCorrelationID == null)
+                {
+                    message.NMSCorrelationID = msg.CorrelationId;
+                }
             }
             finally
             {

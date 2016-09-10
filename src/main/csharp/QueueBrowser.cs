@@ -25,7 +25,6 @@ namespace Apache.NMS.MSMQ
 {
 	public class QueueBrowser : Apache.NMS.IQueueBrowser
 	{
-		private bool closed = false;
 		private bool disposed = false;
 
         private readonly Session session;
@@ -49,6 +48,7 @@ namespace Apache.NMS.MSMQ
             {
                 this.messageQueue.MessageReadPropertyFilter.SetAll();
             }
+            this.selector = selector;
 
             reader = MessageReaderUtil.CreateMessageReader(
                 messageQueue, session.MessageConverter, selector);
@@ -103,7 +103,6 @@ namespace Apache.NMS.MSMQ
                 messageQueue.Dispose();
                 messageQueue = null;
             }
-			closed = true;
 		}
 
 		public string MessageSelector
@@ -116,11 +115,11 @@ namespace Apache.NMS.MSMQ
 			get { return new Queue(this.messageQueue.Path); }
 		}
 
-		internal class Enumerator : IEnumerator
+		internal class Enumerator : IEnumerator, IDisposable
 		{
-			private readonly Session session;
-			private readonly MessageEnumerator innerEnumerator;
-            private readonly IMessageReader reader;
+			private Session session;
+			private MessageEnumerator innerEnumerator;
+            private IMessageReader reader;
 
 			public Enumerator(Session session, MessageQueue messageQueue,
                 IMessageReader reader)
@@ -154,6 +153,15 @@ namespace Apache.NMS.MSMQ
 			{
 				this.innerEnumerator.Reset();
 			}
+
+            public void Dispose()
+            {
+                if(innerEnumerator != null)
+                {
+                    innerEnumerator.Close();
+                    innerEnumerator = null;
+                }
+            }
 		}
 
 		public IEnumerator GetEnumerator()

@@ -32,9 +32,6 @@ namespace Apache.NMS.MSMQ
         private readonly Session session;
         private readonly AcknowledgementMode acknowledgementMode;
         private MessageQueue messageQueue;
-        private Thread asyncDeliveryThread = null;
-        private AutoResetEvent pause = new AutoResetEvent(false);
-        private Atomic<bool> asyncDelivery = new Atomic<bool>(false);
 
         private ConsumerTransformerDelegate consumerTransformer;
         public ConsumerTransformerDelegate ConsumerTransformer
@@ -81,6 +78,8 @@ namespace Apache.NMS.MSMQ
                 messageQueue, session.MessageConverter, selector);
         }
 
+        #region Asynchronous delivery
+
         private int listenerCount = 0;
         private event MessageListener listener;
         public event MessageListener Listener
@@ -89,7 +88,13 @@ namespace Apache.NMS.MSMQ
             {
                 listener += value;
                 listenerCount++;
-                StartAsyncDelivery();
+
+                session.Connection.ConnectionStateChange += OnConnectionStateChange;
+
+                if(session.Connection.IsStarted)
+                {
+                    StartAsyncDelivery();
+                }
             }
 
             remove
@@ -100,12 +105,111 @@ namespace Apache.NMS.MSMQ
                     listenerCount--;
                 }
 
-                if(0 == listenerCount)
+                if(listenerCount == 0)
+                {
+                    session.Connection.ConnectionStateChange -= OnConnectionStateChange;
+
+                    StopAsyncDelivery();
+                }
+            }
+        }
+
+        private void OnConnectionStateChange(object sender, Connection.StateChangeEventArgs e)
+        {
+            if(e.CurrentState == Connection.ConnectionState.Starting)
+            {
+                if(listenerCount > 0)
+                {
+                    StartAsyncDelivery();
+                }
+            }
+            else if(e.CurrentState == Connection.ConnectionState.Stopping)
+            {
+                if(listenerCount > 0)
                 {
                     StopAsyncDelivery();
                 }
             }
         }
+
+        private Thread asyncDeliveryThread = null;
+        private Atomic<bool> asyncDelivery = new Atomic<bool>(false);
+        TimeSpan dispatchingTimeout = new TimeSpan(5000);
+
+        protected virtual void StartAsyncDelivery()
+        {
+            if(asyncDelivery.CompareAndSet(false, true))
+            {
+                asyncDeliveryThread = new Thread(new ThreadStart(DispatchLoop));
+                asyncDeliveryThread.Name = "Message Consumer Dispatch: " + messageQueue.QueueName;
+                asyncDeliveryThread.IsBackground = true;
+                asyncDeliveryThread.Start();
+            }
+        }
+
+        protected virtual void DispatchLoop()
+        {
+            Tracer.Info("Starting dispatcher thread consumer: " + this);
+            while(asyncDelivery.Value)
+            {
+                try
+                {
+                    IMessage message = Receive(dispatchingTimeout);
+                    if(asyncDelivery.Value && message != null)
+                    {
+                        try
+                        {
+                            listener(message);
+                        }
+                        catch(Exception e)
+                        {
+                            HandleAsyncException(e);
+                        }
+                    }
+                }
+                catch(ThreadAbortException ex)
+                {
+                    Tracer.InfoFormat("Thread abort received in thread: {0} : {1}", this, ex.Message);
+
+                    break;
+                }
+                catch(Exception ex)
+                {
+                    Tracer.ErrorFormat("Exception while receiving message in thread: {0} : {1}", this, ex.Message);
+                }
+            }
+            Tracer.Info("Stopping dispatcher thread consumer: " + this);
+        }
+
+        protected virtual void StopAsyncDelivery()
+        {
+            if(asyncDelivery.CompareAndSet(true, false))
+            {
+                if(null != asyncDeliveryThread)
+                {
+                    // Thread.Interrupt and Thread.Abort do not interrupt Receive
+                    // instructions. Attempting to abort the thread and joining
+                    // will result in a phantom backgroud thread, which may
+                    // ultimately consume a message before actually stopping.
+
+                    Tracer.Info("Waiting for thread to complete aborting.");
+                    asyncDeliveryThread.Join(dispatchingTimeout);
+
+                    asyncDeliveryThread = null;
+                    Tracer.Info("Async delivery thread stopped.");
+                }
+            }
+        }
+
+
+        protected virtual void HandleAsyncException(Exception e)
+        {
+            session.Connection.HandleException(e);
+        }
+
+        #endregion
+
+        #region Receive (synchronous)
 
         public IMessage Receive()
         {
@@ -126,7 +230,17 @@ namespace Apache.NMS.MSMQ
 
             if(messageQueue != null)
             {
-                nmsMessage = reader.Receive(timeout);
+                try
+                {
+                    nmsMessage = reader.Receive(timeout);
+                }
+                catch(MessageQueueException ex)
+                {
+                    if(ex.MessageQueueErrorCode != MessageQueueErrorCode.IOTimeout)
+                    {
+                        throw ex;
+                    }
+                }
                 nmsMessage = TransformMessage(nmsMessage);
             }
 
@@ -135,16 +249,12 @@ namespace Apache.NMS.MSMQ
 
         public IMessage ReceiveNoWait()
         {
-            IMessage nmsMessage = null;
-
-            if(messageQueue != null)
-            {
-                nmsMessage = reader.Receive(zeroTimeout);
-                nmsMessage = TransformMessage(nmsMessage);
-            }
-
-            return nmsMessage;
+            return Receive(zeroTimeout);
         }
+
+        #endregion
+
+        #region Close & dispose
 
         public void Dispose()
         {
@@ -153,7 +263,13 @@ namespace Apache.NMS.MSMQ
 
         public void Close()
         {
-            StopAsyncDelivery();
+            if(listenerCount > 0)
+            {
+                session.Connection.ConnectionStateChange -= OnConnectionStateChange;
+
+                StopAsyncDelivery();
+            }
+
             if(messageQueue != null)
             {
                 messageQueue.Dispose();
@@ -161,74 +277,7 @@ namespace Apache.NMS.MSMQ
             }
         }
 
-        protected virtual void StopAsyncDelivery()
-        {
-            if(asyncDelivery.CompareAndSet(true, false))
-            {
-                if(null != asyncDeliveryThread)
-                {
-                    Tracer.Info("Stopping async delivery thread.");
-                    pause.Set();
-                    if(!asyncDeliveryThread.Join(10000))
-                    {
-                        Tracer.Info("Aborting async delivery thread.");
-                        asyncDeliveryThread.Abort();
-                    }
-
-                    asyncDeliveryThread = null;
-                    Tracer.Info("Async delivery thread stopped.");
-                }
-            }
-        }
-
-        protected virtual void StartAsyncDelivery()
-        {
-            if(asyncDelivery.CompareAndSet(false, true))
-            {
-                asyncDeliveryThread = new Thread(new ThreadStart(DispatchLoop));
-                asyncDeliveryThread.Name = "Message Consumer Dispatch: " + messageQueue.QueueName;
-                asyncDeliveryThread.IsBackground = true;
-                asyncDeliveryThread.Start();
-            }
-        }
-
-        protected virtual void DispatchLoop()
-        {
-            Tracer.Info("Starting dispatcher thread consumer: " + this);
-            while(asyncDelivery.Value)
-            {
-                try
-                {
-                    IMessage message = Receive();
-                    if(asyncDelivery.Value && message != null)
-                    {
-                        try
-                        {
-                            listener(message);
-                        }
-                        catch(Exception e)
-                        {
-                            HandleAsyncException(e);
-                        }
-                    }
-                }
-                catch(ThreadAbortException ex)
-                {
-                    Tracer.InfoFormat("Thread abort received in thread: {0} : {1}", this, ex.Message);
-                    break;
-                }
-                catch(Exception ex)
-                {
-                    Tracer.ErrorFormat("Exception while receiving message in thread: {0} : {1}", this, ex.Message);
-                }
-            }
-            Tracer.Info("Stopping dispatcher thread consumer: " + this);
-        }
-
-        protected virtual void HandleAsyncException(Exception e)
-        {
-            session.Connection.HandleException(e);
-        }
+        #endregion
 
         protected virtual IMessage TransformMessage(IMessage message)
         {

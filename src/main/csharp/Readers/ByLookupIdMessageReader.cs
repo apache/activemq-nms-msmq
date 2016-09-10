@@ -28,6 +28,10 @@ namespace Apache.NMS.MSMQ.Readers
 	{
         private Int64 lookupId;
 
+        // The MSMQ documentation for MessageQueue.PeekByLookupId(*) and
+        // MessageQueue.ReceiveByLookupId(*) specifies:
+        // InvalidOperationException: The message with the specified lookupId could not be found.
+ 
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -53,7 +57,18 @@ namespace Apache.NMS.MSMQ.Readers
         /// <returns>Peeked message.</returns>
         public override IMessage Peek()
         {
-            return Convert(messageQueue.PeekByLookupId(lookupId));
+            try
+            {
+                return Convert(messageQueue.PeekByLookupId(lookupId));
+            }
+            catch(InvalidOperationException)
+            {
+                return null;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
 
         /// <summary>
@@ -66,10 +81,21 @@ namespace Apache.NMS.MSMQ.Readers
         /// <returns>Peeked message.</returns>
         public override IMessage Peek(TimeSpan timeSpan)
         {
-            // No time-out option for receiving messages by lookup identifiers:
-            // either the message is present in the queue, or the method throws
-            // an exception immediately if the message is not in the queue. 
-            return Convert(messageQueue.PeekByLookupId(lookupId));
+            try
+            {
+                // No time-out option for receiving messages by lookup identifiers:
+                // either the message is present in the queue, or the method throws
+                // an exception immediately if the message is not in the queue. 
+                return Convert(messageQueue.PeekByLookupId(lookupId));
+            }
+            catch(InvalidOperationException)
+            {
+                return null;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
 
         /// <summary>
@@ -81,7 +107,18 @@ namespace Apache.NMS.MSMQ.Readers
         /// <returns>Received message.</returns>
         public override IMessage Receive()
         {
-            return Convert(messageQueue.ReceiveByLookupId(lookupId));
+            try
+            {
+                return Convert(messageQueue.ReceiveByLookupId(lookupId));
+            }
+            catch(InvalidOperationException)
+            {
+                return null;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
 
         /// <summary>
@@ -93,10 +130,21 @@ namespace Apache.NMS.MSMQ.Readers
         /// <returns>Received message.</returns>
         public override IMessage Receive(TimeSpan timeSpan)
         {
-            // No time-out option for receiving messages by lookup identifiers:
-            // either the message is present in the queue, or the method throws
-            // an exception immediately if the message is not in the queue. 
-            return Convert(messageQueue.ReceiveByLookupId(lookupId));
+            try
+            {
+                // No time-out option for receiving messages by lookup identifiers:
+                // either the message is present in the queue, or the method throws
+                // an exception immediately if the message is not in the queue. 
+                return Convert(messageQueue.ReceiveByLookupId(lookupId));
+            }
+            catch(InvalidOperationException)
+            {
+                return null;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
 
         /// <summary>
@@ -109,8 +157,19 @@ namespace Apache.NMS.MSMQ.Readers
         /// <returns>Received message.</returns>
         public override IMessage Receive(MessageQueueTransaction transaction)
         {
-            return Convert(messageQueue.ReceiveByLookupId(
-                MessageLookupAction.Current, lookupId, transaction));
+            try
+            {
+                return Convert(messageQueue.ReceiveByLookupId(
+                    MessageLookupAction.Current, lookupId, transaction));
+            }
+            catch(InvalidOperationException)
+            {
+                return null;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
 
         /// <summary>
@@ -125,11 +184,22 @@ namespace Apache.NMS.MSMQ.Readers
         public override IMessage Receive(TimeSpan timeSpan,
             MessageQueueTransaction transaction)
         {
-            // No time-out option for receiving messages by lookup identifiers:
-            // either the message is present in the queue, or the method throws
-            // an exception immediately if the message is not in the queue. 
-            return Convert(messageQueue.ReceiveByLookupId(
-                MessageLookupAction.Current, lookupId, transaction));
+            try
+            {
+                // No time-out option for receiving messages by lookup identifiers:
+                // either the message is present in the queue, or the method throws
+                // an exception immediately if the message is not in the queue. 
+                return Convert(messageQueue.ReceiveByLookupId(
+                    MessageLookupAction.Current, lookupId, transaction));
+            }
+            catch(InvalidOperationException)
+            {
+                return null;
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
 
         /// <summary>

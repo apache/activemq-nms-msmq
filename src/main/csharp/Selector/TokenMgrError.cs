@@ -5,33 +5,33 @@ public  class TokenMgrError : System.SystemException
     * Ordinals for various reasons why an Exceptions of this type can be thrown.
     */
 
-   /**
+   /*
     * Lexical error occured.
     */
    internal static readonly int LexicalError = 0;
 
-   /**
+   /*
     * An attempt wass made to create a second instance of a static token manager.
     */
    internal static readonly int StaticLexerError = 1;
 
-   /**
+   /*
     * Tried to change to an invalid lexical state.
     */
    internal static readonly int InvalidLexicalState = 2;
 
-   /**
+   /*
     * Detected (and bailed out of) an infinite loop in the token manager.
     */
    internal static readonly int LoopDetected = 3;
 
-   /**
+   /*
     * Indicates the reason why the exception is thrown. It will have
     * one of the above 4 values.
     */
    int errorCode;
 
-   /**
+   /*
     * Replaces unprintable characters by their espaced (or unicode escaped)
     * equivalents in the given string
     */
@@ -79,7 +79,7 @@ public  class TokenMgrError : System.SystemException
       return retval.ToString();
    }
 
-   /**
+   /*
     * Returns a detailed message for the Exception when it is thrown by the
     * token manager to indicate a lexical error.
     * Parameters : 
@@ -99,7 +99,7 @@ public  class TokenMgrError : System.SystemException
            "after : \"" + AddEscapes(errorAfter) + "\"");
    }
 
-   /**
+   /*
     * You can also modify the body of this method to customize your error messages.
     * For example, cases like LOOP_DETECTED and INVALID_LEXICAL_STATE are not
     * of end-users concern, so you can return something like : 

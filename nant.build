@@ -1,4 +1,4 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <!--
     Licensed to the Apache Software Foundation (ASF) under one or more
     contributor license agreements.  See the NOTICE file distributed with
@@ -31,8 +31,6 @@
     <property name="nunit.dll" value="${basedir}/lib/NUnit/${current.build.framework}/nunit.framework.dll" dynamic="true" />
     <property name="Apache.NMS.dll" value="${basedir}/lib/Apache.NMS/${current.build.framework}/Apache.NMS.dll" dynamic="true" />
     <property name="Apache.NMS.pdb" value="${basedir}/lib/Apache.NMS/${current.build.framework}/Apache.NMS.pdb" dynamic="true" />
-    <property name="Apache.NMS.Test.dll" value="${basedir}/lib/Apache.NMS/${current.build.framework}//Apache.NMS.Test.dll" dynamic="true" />
-    <property name="Apache.NMS.Test.pdb" value="${basedir}/lib/Apache.NMS/${current.build.framework}/Apache.NMS.Test.pdb" dynamic="true" />
     <property name="NUnit.Projectfile" value="Apache.NMS.MSMQ.Test.nunit" />
 
     <!-- Skip certain frameworks, since MSMQ is not supported on those platforms. -->
@@ -77,7 +75,6 @@
             <include name="${current.build.framework.assembly.dir}/System.Xml.dll" />
             <include name="${current.build.framework.assembly.dir}/System.Messaging.dll" />
             <include name="${Apache.NMS.dll}" />
-            <include name="${Apache.NMS.Test.dll}" />
             <include name="${build.bin.dir}/${project.name}.dll" />
             <include name="${nunit.dll}" />
         </assemblyfileset>
@@ -88,8 +85,6 @@
             <include name="nmsprovider-*.config" />
             <include name="${Apache.NMS.dll}" />
             <include name="${Apache.NMS.pdb}" />
-            <include name="${Apache.NMS.Test.dll}" />
-            <include name="${Apache.NMS.Test.pdb}" />
             <include name="${nunit.dll}" />
             <include name="${NUnit.Projectfile}" />
         </fileset>

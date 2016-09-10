@@ -118,16 +118,16 @@ namespace Apache.NMS.MSMQ
             // Populate property data
             foreach(object keyObject in message.Properties.Keys)
             {
-              string key = (keyObject as string);
-              object val = message.Properties.GetString(key);
-              if(!SetLabelAsNMSType && string.Compare(key, "Label", true) == 0 && val != null)
-              {
-				msmqMessage.Label = val.ToString();
-              }
-              else
-              {
-				propertyData[key] = val;
-              }
+                string key = (keyObject as string);
+                object val = message.Properties[key];
+                if(!SetLabelAsNMSType && string.Compare(key, "Label", true) == 0 && val != null)
+                {
+				    msmqMessage.Label = val.ToString();
+                }
+                else
+                {
+				    propertyData[key] = val;
+                }
             }
 
 			// Store the NMS property data in the extension area
@@ -418,6 +418,8 @@ namespace Apache.NMS.MSMQ
 				result = baseMessage;
 			}
 
+            result.ReadOnlyBody = true;
+
 			return result;
 		}
 
@@ -442,6 +444,7 @@ namespace Apache.NMS.MSMQ
 			else if(message is BytesMessage)
 			{
 				BytesMessage bytesMessage = message as BytesMessage;
+                bytesMessage.Reset();
 				answer.BodyStream.Write(bytesMessage.Content, 0, bytesMessage.Content.Length);
 				answer.AppSpecific = (int) NMSMessageType.BytesMessage;
 			}
@@ -604,12 +607,14 @@ namespace Apache.NMS.MSMQ
         /// <result>MSMQ queue.</result>
 		public MessageQueue ToMsmqDestination(IDestination destination)
 		{
-			if(null == destination)
+            Queue queue = destination as Queue;
+
+			if(destination == null)
 			{
 				return null;
 			}
 
-			return new MessageQueue((destination as Destination).Path);
+			return queue.MSMQMessageQueue;
 		}
 
         /// <summary>
@@ -625,7 +630,7 @@ namespace Apache.NMS.MSMQ
 				return null;
 			}
 
-			return new Queue(destinationQueue.Path);
+			return new Queue(destinationQueue);
 		}
 
         #endregion

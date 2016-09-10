@@ -16,6 +16,7 @@
  */
 
 using System;
+using System.Threading;
 
 namespace Apache.NMS.MSMQ
 {
@@ -26,21 +27,101 @@ namespace Apache.NMS.MSMQ
     ///
     public class Connection : IConnection
     {
-        private AcknowledgementMode acknowledgementMode = AcknowledgementMode.AutoAcknowledge;
-        private IMessageConverter messageConverter = new DefaultMessageConverter();
+        #region Constructors
 
-        private IRedeliveryPolicy redeliveryPolicy;
-        private ConnectionMetaData metaData = null;
-        private bool connected;
-        private bool closed;
-        private string clientId;
+        public Connection()
+        {
+            // now lets send the connection and see if we get an ack/nak
+            // TODO: establish a connection
+        }
+
+        #endregion
+
+        #region Connection state
+
+        public enum ConnectionState
+        {
+            Created,
+            Connected,
+            Starting,
+            Started,
+            Stopping,
+            Stopped,
+            Closed
+        }
+
+        private ConnectionState state = ConnectionState.Created;
+
+        public class StateChangeEventArgs : EventArgs
+        {
+            public StateChangeEventArgs(ConnectionState originalState,
+                ConnectionState currentState)
+            {
+                this.originalState = originalState;
+                this.currentState = currentState;
+            }
+
+            private ConnectionState originalState;
+            public ConnectionState OriginalState
+            {
+                get { return originalState; }
+            }
+
+            private ConnectionState currentState;
+            public ConnectionState CurrentState
+            {
+                get { return currentState; }
+            }
+        }
+
+        public delegate void StateChangeEventHandler(object sender, StateChangeEventArgs e);
+
+        public event StateChangeEventHandler ConnectionStateChange;
+
+        private void ChangeState(ConnectionState newState)
+        {
+            if(ConnectionStateChange != null)
+            {
+                ConnectionStateChange(this, 
+                    new StateChangeEventArgs(this.state, newState));
+            }
+
+            this.state = newState;
+        }
+
+        private object stateLock = new object();
+
+        #endregion
+
+        #region Start & stop
 
         /// <summary>
         /// Starts message delivery for this connection.
         /// </summary>
         public void Start()
         {
-            CheckConnected();
+            lock(stateLock)
+            {
+                switch(state)
+                {
+                    case ConnectionState.Created:
+                    case ConnectionState.Connected:
+                    case ConnectionState.Stopped:
+                        ChangeState(ConnectionState.Starting);
+                        ChangeState(ConnectionState.Started);
+                        break;
+
+                    case ConnectionState.Stopping:
+                        throw new NMSException("Connection stopping");
+
+                    case ConnectionState.Closed:
+                        throw new NMSException("Connection closed");
+
+                    case ConnectionState.Starting:
+                    case ConnectionState.Started:
+                        break;
+                }
+            }
         }
 
         /// <summary>
@@ -49,7 +130,7 @@ namespace Apache.NMS.MSMQ
         /// </summary>
         public bool IsStarted
         {
-            get { return true; }
+            get { return state == ConnectionState.Started; }
         }
 
         /// <summary>
@@ -57,8 +138,64 @@ namespace Apache.NMS.MSMQ
         /// </summary>
         public void Stop()
         {
-            CheckConnected();
+            lock(stateLock)
+            {
+                switch(state)
+                {
+                    case ConnectionState.Started:
+                        ChangeState(ConnectionState.Stopping);
+                        ChangeState(ConnectionState.Stopped);
+                        break;
+
+                    case ConnectionState.Starting:
+                        throw new NMSException("Connection starting");
+
+                    case ConnectionState.Closed:
+                        throw new NMSException("Connection closed");
+
+                    case ConnectionState.Created:
+                    case ConnectionState.Connected:
+                    case ConnectionState.Stopping:
+                    case ConnectionState.Stopped:
+                        break;
+                }
+            }
         }
+
+        #endregion
+
+        #region Close & dispose
+
+        public void Close()
+        {
+            if(!IsClosed)
+            {
+                Stop();
+
+                state = ConnectionState.Closed;
+            }
+        }
+
+        public bool IsClosed
+        {
+            get { return state == ConnectionState.Closed; }
+        }
+
+        public void Dispose()
+        {
+            try
+            {
+                Close();
+            }
+            catch
+            {
+                state = ConnectionState.Closed;
+            }
+        }
+
+        #endregion
+
+        #region Create session
 
         /// <summary>
         /// Creates a new session to work on this connection
@@ -73,14 +210,16 @@ namespace Apache.NMS.MSMQ
         /// </summary>
         public ISession CreateSession(AcknowledgementMode mode)
         {
-            CheckConnected();
+            if(IsClosed)
+            {
+                throw new NMSException("Connection closed");
+            }
             return new Session(this, mode);
         }
 
-        public void Dispose()
-        {
-            closed = true;
-        }
+        #endregion
+
+        #region Connection properties
 
         /// <summary>
         /// The default timeout for network requests.
@@ -91,24 +230,27 @@ namespace Apache.NMS.MSMQ
             set { }
         }
 
+        private AcknowledgementMode acknowledgementMode = AcknowledgementMode.AutoAcknowledge;
         public AcknowledgementMode AcknowledgementMode
         {
             get { return acknowledgementMode; }
             set { acknowledgementMode = value; }
         }
 
+        private IMessageConverter messageConverter = new DefaultMessageConverter();
         public IMessageConverter MessageConverter
         {
             get { return messageConverter; }
             set { messageConverter = value; }
         }
 
+        private string clientId;
         public string ClientId
         {
             get { return clientId; }
             set
             {
-                if(connected)
+                if(state != ConnectionState.Created)
                 {
                     throw new NMSException("You cannot change the ClientId once the Connection is connected");
                 }
@@ -116,6 +258,7 @@ namespace Apache.NMS.MSMQ
             }
         }
 
+        private IRedeliveryPolicy redeliveryPolicy;
         /// <summary>
         /// Get/or set the redelivery policy for this connection.
         /// </summary>
@@ -124,6 +267,19 @@ namespace Apache.NMS.MSMQ
             get { return this.redeliveryPolicy; }
             set { this.redeliveryPolicy = value; }
         }
+
+        private ConnectionMetaData metaData = null;
+        /// <summary>
+        /// Gets the Meta Data for the NMS Connection instance.
+        /// </summary>
+        public IConnectionMetaData MetaData
+        {
+            get { return this.metaData ?? (this.metaData = new ConnectionMetaData()); }
+        }
+
+        #endregion
+
+        #region Transformer delegates
 
         private ConsumerTransformerDelegate consumerTransformer;
         public ConsumerTransformerDelegate ConsumerTransformer
@@ -139,57 +295,18 @@ namespace Apache.NMS.MSMQ
             set { this.producerTransformer = value; }
         }
 
-        /// <summary>
-        /// Gets the Meta Data for the NMS Connection instance.
-        /// </summary>
-        public IConnectionMetaData MetaData
-        {
-            get { return this.metaData ?? (this.metaData = new ConnectionMetaData()); }
-        }
+        #endregion
+
+        #region Exception & transport listeners
 
         /// <summary>
         /// A delegate that can receive transport level exceptions.
         /// </summary>
         public event ExceptionListener ExceptionListener;
 
-        /// <summary>
-        /// An asynchronous listener that is notified when a Fault tolerant connection
-        /// has been interrupted.
-        /// </summary>
-        public event ConnectionInterruptedListener ConnectionInterruptedListener;
-
-        /// <summary>
-        /// An asynchronous listener that is notified when a Fault tolerant connection
-        /// has been resumed.
-        /// </summary>
-        public event ConnectionResumedListener ConnectionResumedListener;
-
-        protected void CheckConnected()
-        {
-            if(closed)
-            {
-                throw new NMSException("Connection Closed");
-            }
-            if(!connected)
-            {
-                connected = true;
-                // now lets send the connection and see if we get an ack/nak
-                // TODO: establish a connection
-            }
-        }
-
-        public void Close()
-        {
-            Dispose();
-        }
-
-        public void PurgeTempDestinations()
-        {
-        }
-
         public void HandleException(Exception e)
         {
-            if(ExceptionListener != null && !this.closed)
+            if(ExceptionListener != null && !this.IsClosed)
             {
                 ExceptionListener(e);
             }
@@ -199,11 +316,17 @@ namespace Apache.NMS.MSMQ
             }
         }
 
+        /// <summary>
+        /// An asynchronous listener that is notified when a Fault tolerant connection
+        /// has been interrupted.
+        /// </summary>
+        public event ConnectionInterruptedListener ConnectionInterruptedListener;
+
         public void HandleTransportInterrupted()
         {
             Tracer.Debug("Transport has been Interrupted.");
 
-            if(this.ConnectionInterruptedListener != null && !this.closed)
+            if(this.ConnectionInterruptedListener != null && !this.IsClosed)
             {
                 try
                 {
@@ -215,11 +338,17 @@ namespace Apache.NMS.MSMQ
             }
         }
 
+        /// <summary>
+        /// An asynchronous listener that is notified when a Fault tolerant connection
+        /// has been resumed.
+        /// </summary>
+        public event ConnectionResumedListener ConnectionResumedListener;
+
         public void HandleTransportResumed()
         {
             Tracer.Debug("Transport has resumed normal operation.");
 
-            if(this.ConnectionResumedListener != null && !this.closed)
+            if(this.ConnectionResumedListener != null && !this.IsClosed)
             {
                 try
                 {
@@ -229,6 +358,12 @@ namespace Apache.NMS.MSMQ
                 {
                 }
             }
+        }
+
+        #endregion
+
+        public void PurgeTempDestinations()
+        {
         }
     }
 }
